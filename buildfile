@@ -4,7 +4,9 @@ repositories.remote << 'http://repo1.maven.org/maven2'
 
 JUNIT = 'junit:junit:jar:4.11'
 
-define 'asciidoctor-diagram-java', :version => '1.3.0-SNAPSHOT' do
+THIS_VERSION = '1.3.0-SNAPSHOT'
+
+define 'asciidoctor-diagram-java', :version => THIS_VERSION do
   no_ipr
   iml.jdk_version = '1.7'
 
