@@ -1,0 +1,5 @@
+= Asciidoctor Diagram Java Tools
+Pepijn Van_Eeckhoudt
+
+This project provides wrapper code for the PlantUML and Ditaa libraries that simplifies usage of these libraries from
+Ruby.
