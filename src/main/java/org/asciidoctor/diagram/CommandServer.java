@@ -1,50 +1,51 @@
 package org.asciidoctor.diagram;
 
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * An simple, single client command server that accepts HTTP messages as input.
+ */
 public class CommandServer {
+    private final ServerSocket serverSocket;
     private CommandProcessor processor;
-    private RequestInput input;
-    private ResponseOutput output;
 
     public static void main(String[] args) throws IOException {
-        int port = -1;
+        ServerSocket serverSocket = new ServerSocket(0);
+        System.out.println(serverSocket.getLocalPort());
+        System.out.flush();
 
-        for (int i = 0; i < args.length; i++) {
-            String arg = args[i];
-            if (arg.equals("-p")) {
-                port = Integer.parseInt(args[++i]);
-            }
-        }
-
-        CommandServer server = createNetworkServer(port);
+        CommandServer server = new CommandServer(serverSocket);
         server.processRequests();
+        server.terminate();
     }
 
-    public static CommandServer createNetworkServer(int port) throws IOException {
-        Socket socket = new Socket(InetAddress.getLocalHost(), port);
-        HTTPInputStream in = new HTTPInputStream(socket.getInputStream());
-        HTTPOutputStream out = new HTTPOutputStream(socket.getOutputStream());
-
-        return new CommandServer(in, out, new CommandProcessor());
-    }
-
-    public CommandServer(RequestInput input, ResponseOutput output, CommandProcessor processor) {
-        this.input = input;
-        this.output = output;
-        this.processor = processor;
+    public CommandServer(ServerSocket socket) {
+        this.serverSocket = socket;
+        this.processor = new CommandProcessor();
     }
 
     public void processRequests() throws IOException {
-        Request request;
-        while ((request = input.readRequest()) != null) {
-            output.writeResponse(processor.processRequest(request));
+        while (!serverSocket.isClosed()) {
+            Socket client = serverSocket.accept();
+
+            RequestInput input = new HTTPInputStream(client.getInputStream());
+            ResponseOutput output = new HTTPOutputStream(client.getOutputStream());
+
+            Request request;
+            while ((request = input.readRequest()) != null) {
+                output.writeResponse(processor.processRequest(request));
+                if ("close".equals(request.headers.getValue(HTTPHeader.CONNECTION))) {
+                    break;
+                }
+            }
+
+            client.close();
         }
     }
 
     public void terminate() throws IOException {
-        input.close();
+        serverSocket.close();
     }
 }

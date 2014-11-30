@@ -7,6 +7,8 @@ abstract class HTTPHeader<V> {
     public static final HTTPHeader<MimeType> ACCEPT = new MimeTypeHeader("Accept");
     public static final HTTPHeader<Integer> CONTENT_LENGTH = new IntegerHeader("Content-Length");
     public static final HTTPHeader<MimeType> CONTENT_TYPE = new MimeTypeHeader("Content-Type");
+    public static final HTTPHeader<String> HOST = new StringHeader("Host");
+    public static final HTTPHeader<String> CONNECTION = new StringHeader("Connection");
 
     private static final Map<String, HTTPHeader> HEADERS;
     static {
