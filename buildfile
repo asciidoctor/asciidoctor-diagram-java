@@ -5,7 +5,7 @@ repositories.release_to = "file://#{File.dirname(__FILE__)}"
 
 JUNIT = 'junit:junit:jar:4.11'
 
-THIS_VERSION = "1.3.2"
+THIS_VERSION = "1.3.3-SNAPSHOT"
 
 define 'asciidoctor-diagram-java', :version => THIS_VERSION do
   no_ipr
