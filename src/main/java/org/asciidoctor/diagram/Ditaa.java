@@ -27,6 +27,34 @@ class Ditaa implements DiagramGenerator {
         }
 
         ConversionOptions conversionOptions = new ConversionOptions();
+
+        String optionString = request.headers.getValue(HTTPHeader.OPTIONS);
+        if (optionString != null) {
+            String[] options = optionString.split(" ");
+            for (int i = 0; i < options.length; i++) {
+                String option = options[i];
+                if (option.equals("--no-antialias") || option.equals("-A")) {
+                    conversionOptions.renderingOptions.setAntialias(false);
+                } else if (option.equals("--no-separation") || option.equals("-E")) {
+                    conversionOptions.processingOptions.setPerformSeparationOfCommonEdges(false);
+                } else if (option.equals("--round-corners") || option.equals("-r")) {
+                    conversionOptions.processingOptions.setAllCornersAreRound(true);
+                } else if (option.equals("--no-shadows") || option.equals("-S")) {
+                    conversionOptions.renderingOptions.setDropShadows(false);
+                } else if (option.equals("--debug") || option.equals("-d")) {
+                    conversionOptions.renderingOptions.setRenderDebugLines(true);
+                } else if ((option.equals("--scale") || option.equals("-s")) && i < options.length - 1) {
+                    String scale = options[++i];
+                    try {
+                        float scaleFactor = Float.parseFloat(scale);
+                        conversionOptions.renderingOptions.setScale(scaleFactor);
+                    } catch (NumberFormatException e) {
+                        // Ignore option
+                    }
+                }
+            }
+        }
+
         conversionOptions.processingOptions.setCharacterEncoding(Charsets.UTF8.name());
 
         TextGrid textGrid = new TextGrid();

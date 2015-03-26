@@ -9,6 +9,7 @@ abstract class HTTPHeader<V> {
     public static final HTTPHeader<MimeType> CONTENT_TYPE = new MimeTypeHeader("Content-Type");
     public static final HTTPHeader<String> HOST = new StringHeader("Host");
     public static final HTTPHeader<String> CONNECTION = new StringHeader("Connection");
+    public static final HTTPHeader<String> OPTIONS = new StringHeader("X-Options");
 
     private static final Map<String, HTTPHeader> HEADERS;
     static {
