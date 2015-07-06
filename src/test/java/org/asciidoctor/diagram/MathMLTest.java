@@ -127,31 +127,4 @@ public class MathMLTest {
 
         assertEquals(400, response.code);
     }
-
-    public static void main(String[] args) throws IOException
-    {
-        CommandProcessor server = new CommandProcessor();
-
-        HTTPHeaders h = new HTTPHeaders();
-        h.putValue(HTTPHeader.CONTENT_TYPE, MimeType.TEXT_PLAIN_UTF8);
-        h.putValue(HTTPHeader.ACCEPT, MimeType.PNG);
-
-        Response response = server.processRequest(new Request(
-                URI.create("/mathml"),
-                h,
-                MATHML_INPUT.getBytes(Charset.forName("UTF-8"))
-        ));
-
-        assertEquals(200, response.code);
-        assertIsPNG(response);
-
-        BufferedImage read = ImageIO.read(new ByteArrayInputStream(response.data));
-        JFrame f = new JFrame();
-        f.getContentPane().setLayout(new BorderLayout());
-        f.getContentPane().add(new JLabel(new ImageIcon(read)));
-        f.pack();
-        f.setLocationRelativeTo(null);
-        f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        f.setVisible(true);
-    }
 }
