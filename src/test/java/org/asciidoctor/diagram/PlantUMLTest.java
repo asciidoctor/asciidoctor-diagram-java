@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import static org.asciidoctor.diagram.Assert.assertIsPNG;
 import static org.asciidoctor.diagram.Assert.assertIsSVG;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class PlantUMLTest {
     private static final String PLANTUML_INPUT = "@startuml\nA -> B\n@enduml";
@@ -23,10 +24,12 @@ public class PlantUMLTest {
         Response response = server.processRequest(new Request(
                 URI.create("/plantuml"),
                 h,
-                PLANTUML_INPUT.getBytes(Charset.forName("UTF-8"))
+                PLANTUML_INPUT.getBytes(Charsets.UTF8)
         ));
 
-        assertEquals(200, response.code);
+        if (response.code != 200) {
+            fail(new String(response.data, Charsets.UTF8));
+        }
         assertIsPNG(response);
     }
 
@@ -41,10 +44,12 @@ public class PlantUMLTest {
         Response response = server.processRequest(new Request(
                 URI.create("/plantuml"),
                 h,
-                PLANTUML_INPUT.getBytes(Charset.forName("UTF-8"))
+                PLANTUML_INPUT.getBytes(Charsets.UTF8)
         ));
 
-        assertEquals(200, response.code);
+        if (response.code != 200) {
+            fail(new String(response.data, Charsets.UTF8));
+        }
         assertIsSVG(response);
     }
 
@@ -59,7 +64,7 @@ public class PlantUMLTest {
         Response response = server.processRequest(new Request(
                 URI.create("/plantuml"),
                 h,
-                PLANTUML_INPUT.getBytes(Charset.forName("UTF-8"))
+                PLANTUML_INPUT.getBytes(Charsets.UTF8)
         ));
 
         assertEquals(400, response.code);
@@ -76,7 +81,7 @@ public class PlantUMLTest {
         Response response = server.processRequest(new Request(
                 URI.create("/plantuml"),
                 h,
-                PLANTUML_INPUT.getBytes(Charset.forName("UTF-8"))
+                PLANTUML_INPUT.getBytes(Charsets.UTF8)
         ));
 
         assertEquals(400, response.code);
