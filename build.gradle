@@ -23,6 +23,11 @@ dependencies {
     testCompile 'junit:junit:4.11'
 }
 
+compileJava {
+    sourceCompatibility = '1.6'
+    targetCompatibility = '1.6'
+}
+
 task zip(type: Zip) {
     from jar
     from configurations.runtime
