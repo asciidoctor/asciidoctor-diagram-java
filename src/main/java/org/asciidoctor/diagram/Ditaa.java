@@ -6,6 +6,7 @@ import org.stathissideris.ascii2image.text.TextGrid;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,11 +44,38 @@ class Ditaa implements DiagramGenerator {
                     conversionOptions.renderingOptions.setDropShadows(false);
                 } else if (option.equals("--debug") || option.equals("-d")) {
                     conversionOptions.renderingOptions.setRenderDebugLines(true);
+                } else if (option.equals("--fixed-slope") || option.equals("-W")) {
+                    conversionOptions.renderingOptions.setFixedSlope(true);
+                } else if (option.equals("--transparent") || option.equals("-T")) {
+                    conversionOptions.renderingOptions.setBackgroundColor(new Color(0, 0, 0, 0));
+                } else if ((option.equals("--background") || option.equals("-b")) && i < options.length - 1) {
+                    try {
+                        Color backgroundColor = ConversionOptions.parseColor(options[++i]);
+                        conversionOptions.renderingOptions.setBackgroundColor(backgroundColor);
+                    } catch (IllegalArgumentException e) {
+                        // Ignore option
+                    }
                 } else if ((option.equals("--scale") || option.equals("-s")) && i < options.length - 1) {
                     String scale = options[++i];
                     try {
                         float scaleFactor = Float.parseFloat(scale);
                         conversionOptions.renderingOptions.setScale(scaleFactor);
+                    } catch (NumberFormatException e) {
+                        // Ignore option
+                    }
+                } else if ((option.equals("--tabs") || option.equals("-t")) && i < options.length - 1) {
+                    String tabSize = options[++i];
+                    try {
+                        int tabs = Integer.parseInt(tabSize);
+                        conversionOptions.processingOptions.setTabSize(tabs);
+                    } catch (NumberFormatException e) {
+                        // Ignore option
+                    }
+                } else if ((option.equals("--tabs") || option.equals("-t")) && i < options.length - 1) {
+                    String tabSize = options[++i];
+                    try {
+                        int tabs = Integer.parseInt(tabSize);
+                        conversionOptions.processingOptions.setTabSize(tabs);
                     } catch (NumberFormatException e) {
                         // Ignore option
                     }
