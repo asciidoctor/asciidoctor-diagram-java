@@ -23,8 +23,8 @@ public class CommandProcessor {
                 generator = new PlantUML();
             } else if (requestPath.equalsIgnoreCase("/ditaa")) {
                 generator = new Ditaa();
-            } else if (requestPath.equalsIgnoreCase("/mathml")) {
-                generator = new MathML();
+//            } else if (requestPath.equalsIgnoreCase("/mathml")) {
+//                generator = new MathML();
             } else {
                 return new Response(
                         404,
