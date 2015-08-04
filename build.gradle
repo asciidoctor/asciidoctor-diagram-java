@@ -1,0 +1,29 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'net.researchgate:gradle-release:2.1.2'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'java'
+apply plugin: 'net.researchgate.release'
+
+group = 'org.asciidoctor'
+
+dependencies {
+    compile fileTree('lib')
+    testCompile 'junit:junit:4.11'
+}
+
+task zip(type: Zip) {
+    from jar
+    from configurations.runtime
+}
