@@ -32,7 +32,21 @@ class PlantUML implements DiagramGenerator {
 
     @Override
     public ResponseData generate(Request request) throws IOException {
-        OptionFlags.getInstance().setDotExecutable(getGraphviz().getAbsolutePath());
+        File graphviz;
+
+        String pathToGraphViz = request.headers.getValue("X-Graphviz");
+        if (pathToGraphViz != null) {
+            File graphvizParam = new File(pathToGraphViz);
+            if (graphvizParam.canExecute()) {
+                graphviz = graphvizParam;
+            } else {
+                throw new IOException("GraphViz 'dot' tool at '" + pathToGraphViz + "' is not executable");
+            }
+        } else {
+            graphviz = getGraphviz();
+        }
+
+        OptionFlags.getInstance().setDotExecutable(graphviz.getAbsolutePath());
 
         MimeType format = request.headers.getValue(HTTPHeader.ACCEPT);
 
