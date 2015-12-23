@@ -54,16 +54,66 @@ public class CommandProcessor {
     private Response createErrorResponse(int code, Exception e) {
         StringWriter s = new StringWriter();
         PrintWriter p = new PrintWriter(s);
-        e.printStackTrace(p);
+        p.write("{\"msg\":");
+        writeJSONString(p, e.getMessage());
+        p.write(",\"stk\":[");
+        StackTraceElement[] stackTrace = e.getStackTrace();
+        for (int i = 0; i < stackTrace.length; i++) {
+            StackTraceElement elem = stackTrace[i];
+            if (i > 0) {
+                p.write(",");
+            }
+            writeJSONString(p, elem.getClassName() + "#" + elem.getMethodName() + ":" + elem.getLineNumber());
+        }
+        p.write("]}");
         p.flush();
         p.close();
 
         byte[] bytes = s.toString().getBytes(Charsets.UTF8);
 
         HTTPHeaders headers = new HTTPHeaders();
-        headers.putValue(HTTPHeader.CONTENT_TYPE, MimeType.TEXT_PLAIN_UTF8);
+        headers.putValue(HTTPHeader.CONTENT_TYPE, MimeType.JSON_UTF8);
         headers.putValue(HTTPHeader.CONTENT_LENGTH, bytes.length);
 
         return new Response(code, headers, bytes);
+    }
+
+    private void writeJSONString(PrintWriter p, String message)
+    {
+        if (message == null) {
+            p.write("null");
+            return;
+        }
+
+        p.write('"');
+        for (int i = 0; i < message.length(); i++) {
+            int c = message.charAt(i);
+            switch (c) {
+                case '"':
+                    p.print("\\\"");
+                    break;
+                case '\\':
+                    p.print("\\\\");
+                    break;
+                case '\b':
+                    p.print("\\b");
+                    break;
+                case '\f':
+                    p.print("\\f");
+                    break;
+                case '\n':
+                    p.print("\\n");
+                    break;
+                case '\r':
+                    p.print("\\r");
+                    break;
+                case '\t':
+                    p.print("\\t");
+                    break;
+                default:
+                    p.write(c);
+            }
+        }
+        p.write('"');
     }
 }
