@@ -26,11 +26,7 @@ public class CommandProcessor {
 //            } else if (requestPath.equalsIgnoreCase("/mathml")) {
 //                generator = new MathML();
             } else {
-                return new Response(
-                        404,
-                        new HTTPHeaders(),
-                        null
-                );
+                return createErrorResponse(404, new IllegalArgumentException("Invalid path '" + requestPath +"'"));
             }
 
             ResponseData result = generator.generate(request);
@@ -63,7 +59,15 @@ public class CommandProcessor {
             if (i > 0) {
                 p.write(",");
             }
-            writeJSONString(p, elem.getClassName() + "#" + elem.getMethodName() + ":" + elem.getLineNumber());
+            p.write('[');
+            writeJSONString(p, elem.getFileName());
+            p.write(',');
+            writeJSONString(p, elem.getClassName());
+            p.write(',');
+            writeJSONString(p, elem.getMethodName());
+            p.write(',');
+            p.write(Integer.toString(elem.getLineNumber()));
+            p.write(']');
         }
         p.write("]}");
         p.flush();

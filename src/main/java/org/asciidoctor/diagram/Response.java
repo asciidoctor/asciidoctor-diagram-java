@@ -19,6 +19,8 @@ class Response {
                 return "OK";
             case 400:
                 return "Bad Request";
+            case 404:
+                return "Not Found";
             case 500:
                 return "Internal Server Error";
             default:
