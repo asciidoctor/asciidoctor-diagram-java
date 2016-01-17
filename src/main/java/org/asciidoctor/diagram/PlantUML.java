@@ -13,23 +13,6 @@ import java.io.IOException;
 class PlantUML implements DiagramGenerator {
     public static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.PNG;
 
-    private static File graphviz = null;
-
-    private static File getGraphviz() throws IOException {
-        if (graphviz == null) {
-            graphviz = Which.which("dot");
-        }
-
-        if (graphviz == null) {
-            throw new IOException("Could not find GraphViz 'dot' tool");
-        }
-
-        return graphviz;
-    }
-
-    public PlantUML() {
-    }
-
     @Override
     public ResponseData generate(Request request) throws IOException {
         File graphviz;
@@ -43,10 +26,8 @@ class PlantUML implements DiagramGenerator {
                 throw new IOException("GraphViz 'dot' tool at '" + pathToGraphViz + "' is not executable");
             }
         } else {
-            graphviz = getGraphviz();
+            graphviz = null;
         }
-
-        OptionFlags.getInstance().setDotExecutable(graphviz.getAbsolutePath());
 
         MimeType format = request.headers.getValue(HTTPHeader.ACCEPT);
 
@@ -76,11 +57,15 @@ class PlantUML implements DiagramGenerator {
         option.setFileFormat(fileFormat);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        new SourceStringReader(
-                new Defines(),
-                request.asString(),
-                option.getConfig()
-        ).generateImage(byteArrayOutputStream, option.getFileFormatOption());
+
+        synchronized (this) {
+            OptionFlags.getInstance().setDotExecutable(graphviz != null ? graphviz.getAbsolutePath() : null);
+            new SourceStringReader(
+                    new Defines(),
+                    request.asString(),
+                    option.getConfig()
+            ).generateImage(byteArrayOutputStream, option.getFileFormatOption());
+        }
 
         return new ResponseData(
                 format,
