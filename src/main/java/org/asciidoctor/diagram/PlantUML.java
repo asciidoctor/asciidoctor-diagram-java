@@ -14,16 +14,19 @@ class PlantUML implements DiagramGenerator {
     public static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.PNG;
 
     private static Method SET_DOT_EXE;
+    private static Object SET_DOT_EXE_INSTANCE;
 
     static {
         try {
             SET_DOT_EXE = OptionFlags.class.getMethod("setDotExecutable", String.class);
+            SET_DOT_EXE_INSTANCE = OptionFlags.getInstance();
         } catch (NoSuchMethodException e) {
             // Try next option
         }
 
         try {
             SET_DOT_EXE = GraphvizUtils.class.getMethod("setDotExecutable", String.class);
+            SET_DOT_EXE_INSTANCE = null;
         } catch (NoSuchMethodException e) {
             // Try next option
         }
@@ -82,7 +85,7 @@ class PlantUML implements DiagramGenerator {
 
         synchronized (this) {
             try {
-                SET_DOT_EXE.invoke(null, graphviz != null ? graphviz.getAbsolutePath() : null);
+                SET_DOT_EXE.invoke(SET_DOT_EXE_INSTANCE, graphviz != null ? graphviz.getAbsolutePath() : null);
             } catch (IllegalAccessException e) {
                 throw new IOException(e);
             } catch (InvocationTargetException e) {
