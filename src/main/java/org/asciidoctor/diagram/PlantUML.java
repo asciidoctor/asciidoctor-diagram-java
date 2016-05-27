@@ -1,17 +1,39 @@
 package org.asciidoctor.diagram;
 
-import net.sourceforge.plantuml.FileFormat;
-import net.sourceforge.plantuml.Option;
-import net.sourceforge.plantuml.OptionFlags;
-import net.sourceforge.plantuml.SourceStringReader;
+import net.sourceforge.plantuml.*;
+import net.sourceforge.plantuml.cucadiagram.dot.GraphvizUtils;
 import net.sourceforge.plantuml.preproc.Defines;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 class PlantUML implements DiagramGenerator {
     public static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.PNG;
+
+    private static Method SET_DOT_EXE;
+
+    static {
+        try {
+            SET_DOT_EXE = OptionFlags.class.getMethod("setDotExecutable", String.class);
+        } catch (NoSuchMethodException e) {
+            // Try next option
+        }
+
+        try {
+            SET_DOT_EXE = GraphvizUtils.class.getMethod("setDotExecutable", String.class);
+        } catch (NoSuchMethodException e) {
+            // Try next option
+        }
+
+        if (SET_DOT_EXE == null) {
+            throw new RuntimeException(String.format(
+                    "Could not find setDotExecutable method"
+            ));
+        }
+    }
 
     @Override
     public ResponseData generate(Request request) throws IOException {
@@ -59,7 +81,14 @@ class PlantUML implements DiagramGenerator {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         synchronized (this) {
-            OptionFlags.getInstance().setDotExecutable(graphviz != null ? graphviz.getAbsolutePath() : null);
+            try {
+                SET_DOT_EXE.invoke(null, graphviz != null ? graphviz.getAbsolutePath() : null);
+            } catch (IllegalAccessException e) {
+                throw new IOException(e);
+            } catch (InvocationTargetException e) {
+                throw new IOException(e);
+            }
+
             new SourceStringReader(
                     new Defines(),
                     request.asString(),
