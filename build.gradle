@@ -11,7 +11,7 @@ buildscript {
 
 apply plugin: 'net.researchgate.release'
 
-allprojects {
+subprojects {
     apply plugin: 'java'
 
     repositories {
