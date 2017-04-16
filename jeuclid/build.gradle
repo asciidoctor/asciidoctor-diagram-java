@@ -1,0 +1,6 @@
+dependencies {
+    compile project(':server')
+    compile 'net.sourceforge.jeuclid:jeuclid-core:3.1.9'
+    compile 'org.apache.xmlgraphics:batik-svggen:1.7'
+    testCompile project(':server')
+}

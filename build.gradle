@@ -9,26 +9,28 @@ buildscript {
     }
 }
 
-repositories {
-    mavenCentral()
-}
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'net.researchgate.release'
 
-apply plugin: 'java'
-apply plugin: 'net.researchgate.release'
+    repositories {
+        mavenCentral()
+    }
 
-group = 'org.asciidoctor'
+    group = 'org.asciidoctor'
 
-dependencies {
-    compile fileTree('lib')
-    testCompile 'junit:junit:4.11'
-}
+    dependencies {
+        compile fileTree('lib')
+        testCompile 'junit:junit:4.11'
+    }
 
-compileJava {
-    sourceCompatibility = '1.6'
-    targetCompatibility = '1.6'
-}
+    compileJava {
+        sourceCompatibility = '1.6'
+        targetCompatibility = '1.6'
+    }
 
-task zip(type: Zip) {
-    from jar
-    from configurations.runtime
+    task zip(type: Zip) {
+        from jar
+        from configurations.runtime
+    }
 }

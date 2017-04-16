@@ -1,0 +1,4 @@
+include 'server'
+include 'ditaa'
+//include 'jeuclid'
+include 'plantuml'
