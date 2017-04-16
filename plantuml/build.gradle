@@ -1,6 +1,6 @@
 dependencies {
     compile project(':server')
-    compile 'org.apache.xmlgraphics:batik-svggen:1.7'
+    compile 'org.apache.xmlgraphics:batik-svg-dom:1.7'
     compile 'org.apache.xmlgraphics:batik-svggen:1.7'
     testCompile project(':server')
 }
