@@ -11,6 +11,8 @@ import java.util.ServiceLoader;
  * An simple, single client command server that accepts HTTP messages as input.
  */
 public class CommandServer {
+    private static final Map<String, DiagramGenerator> DEFAULT_GENERATORS = loadGenerators();
+
     private final ServerSocket serverSocket;
     private CommandProcessor processor;
 
@@ -19,13 +21,9 @@ public class CommandServer {
         System.out.println(serverSocket.getLocalPort());
         System.out.flush();
 
-        CommandServer server = new CommandServer(serverSocket);
+        CommandServer server = new CommandServer(serverSocket, getGenerators());
         server.processRequests();
         server.terminate();
-    }
-
-    public CommandServer(ServerSocket socket) {
-        this(socket, loadGenerators());
     }
 
     public CommandServer(ServerSocket socket, Map<String, DiagramGenerator> generators) {
@@ -33,7 +31,11 @@ public class CommandServer {
         this.processor = new CommandProcessor(generators);
     }
 
-    static Map<String, DiagramGenerator> loadGenerators()
+    static Map<String, DiagramGenerator> getGenerators() {
+        return DEFAULT_GENERATORS;
+    }
+
+    private static Map<String, DiagramGenerator> loadGenerators()
     {
         Map<String, DiagramGenerator> generatorMap = new HashMap<String, DiagramGenerator>();
 

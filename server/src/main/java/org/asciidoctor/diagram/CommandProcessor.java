@@ -6,6 +6,10 @@ import java.util.Map;
 public class CommandProcessor {
     private final Map<String, DiagramGenerator> generatorMap;
 
+    public CommandProcessor() {
+        this(CommandServer.getGenerators());
+    }
+
     CommandProcessor(Map<String, DiagramGenerator> generators) {
         this.generatorMap = generators;
     }
