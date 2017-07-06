@@ -34,9 +34,7 @@ public class PlantUML implements DiagramGenerator
         }
 
         if (SET_DOT_EXE == null) {
-            throw new RuntimeException(String.format(
-                    "Could not find setDotExecutable method"
-            ));
+            throw new RuntimeException("Could not find setDotExecutable method");
         }
     }
 
@@ -101,10 +99,10 @@ public class PlantUML implements DiagramGenerator
             }
 
             new SourceStringReader(
-                    new Defines(),
+                    Defines.createEmpty(),
                     request.asString(),
                     option.getConfig()
-            ).generateImage(byteArrayOutputStream, option.getFileFormatOption());
+            ).outputImage(byteArrayOutputStream, option.getFileFormatOption());
         }
 
         return new ResponseData(
