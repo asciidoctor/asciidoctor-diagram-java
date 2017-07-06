@@ -35,3 +35,5 @@ subprojects {
         from configurations.runtime
     }
 }
+
+task 'build'
