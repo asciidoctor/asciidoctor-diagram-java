@@ -91,10 +91,8 @@ public class Ditaa implements DiagramGenerator
             }
         }
 
-        conversionOptions.processingOptions.setCharacterEncoding(Charsets.UTF8.name());
-
         TextGrid textGrid = new TextGrid();
-        textGrid.loadFrom(new ByteArrayInputStream(request.asString().getBytes(Charsets.UTF8)), conversionOptions.processingOptions);
+        textGrid.initialiseWithText(request.asString(), conversionOptions.processingOptions);
 
         org.stathissideris.ascii2image.graphics.Diagram diagram = new org.stathissideris.ascii2image.graphics.Diagram(textGrid, conversionOptions);
         BufferedImage image = new BitmapRenderer().renderToImage(diagram, conversionOptions.renderingOptions);
