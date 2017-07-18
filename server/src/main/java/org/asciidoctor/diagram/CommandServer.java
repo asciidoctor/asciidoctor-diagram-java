@@ -37,8 +37,12 @@ public class CommandServer {
     {
         Map<String, DiagramGenerator> generatorMap = new HashMap<String, DiagramGenerator>();
 
-        ServiceLoader<DiagramGenerator> generatorLoader = ServiceLoader.load(DiagramGenerator.class);
+        ServiceLoader<DiagramGenerator> generatorLoader = ServiceLoader.load(DiagramGenerator.class, CommandServer.class.getClassLoader());
         for (DiagramGenerator generator : generatorLoader) {
+            generatorMap.put(generator.getName(), generator);
+        }
+        ServiceLoader<DiagramGenerator> generatorLoaderTCCL = ServiceLoader.load(DiagramGenerator.class);
+        for (DiagramGenerator generator : generatorLoaderTCCL) {
             generatorMap.put(generator.getName(), generator);
         }
         return generatorMap;
