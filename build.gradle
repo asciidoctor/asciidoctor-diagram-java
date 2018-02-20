@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.researchgate:gradle-release:2.1.2'
+        classpath 'net.researchgate:gradle-release:2.6.0'
     }
 }
 
@@ -35,3 +35,5 @@ subprojects {
         from configurations.runtime
     }
 }
+
+task 'build'
