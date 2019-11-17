@@ -1,19 +1,24 @@
 package org.asciidoctor.diagram.plantuml;
 
 import net.sourceforge.plantuml.*;
+import net.sourceforge.plantuml.core.Diagram;
 import net.sourceforge.plantuml.cucadiagram.dot.GraphvizUtils;
+import net.sourceforge.plantuml.error.PSystemError;
 import net.sourceforge.plantuml.preproc.Defines;
 import org.asciidoctor.diagram.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class PlantUML implements DiagramGenerator
 {
-    public static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.PNG;
+    private static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.PNG;
 
     private static Method SET_DOT_EXE;
     private static Object SET_DOT_EXE_INSTANCE;
@@ -92,23 +97,42 @@ public class PlantUML implements DiagramGenerator
         synchronized (this) {
             try {
                 SET_DOT_EXE.invoke(SET_DOT_EXE_INSTANCE, graphviz != null ? graphviz.getAbsolutePath() : null);
-            } catch (IllegalAccessException e) {
-                throw new IOException(e);
-            } catch (InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new IOException(e);
             }
 
-            new SourceStringReader(
+            BlockUmlBuilder builder = new BlockUmlBuilder(
+                    option.getConfig(),
+                    "UTF-8",
                     Defines.createEmpty(),
-                    request.asString(),
-                    option.getConfig()
-            ).outputImage(byteArrayOutputStream, option.getFileFormatOption());
+                    new StringReader(request.asString()),
+                    FileSystem.getInstance().getCurrentDir(),
+                    "<input>"
+            );
+            List<BlockUml> blocks = builder.getBlockUmls();
+
+            if (blocks.size() == 0) {
+                throw new IOException("No @startuml found");
+            } else {
+                for (BlockUml b : blocks) {
+                    Diagram system = b.getDiagram();
+                    if (system instanceof PSystemError) {
+                        system.exportDiagram(byteArrayOutputStream, 0, new FileFormatOption(FileFormat.UTXT));
+                        String error = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+                        throw new IOException(error);
+                    }
+
+                    if (system.getNbImages() > 0) {
+                        system.exportDiagram(byteArrayOutputStream, 0, fileFormat);
+                        break;
+                    }
+                }
+            }
         }
 
         return new ResponseData(
                 format,
                 byteArrayOutputStream.toByteArray()
         );
-
     }
 }

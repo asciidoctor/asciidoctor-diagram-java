@@ -102,4 +102,18 @@ public class PlantUMLTest {
                 PLANTUML_INPUT.getBytes(Charsets.UTF8)
         ));
     }
+
+    @Test(expected = IOException.class)
+    public void testSyntaxErrors() throws IOException
+    {
+        HTTPHeaders h = new HTTPHeaders();
+        h.putValue(HTTPHeader.CONTENT_TYPE, MimeType.TEXT_PLAIN_UTF8);
+        h.putValue(HTTPHeader.ACCEPT, MimeType.SVG);
+
+        new PlantUML().generate(new Request(
+                URI.create("/plantuml"),
+                h,
+                "@startuml\nBob; sdf; foo\n@enduml".getBytes(Charsets.UTF8)
+        ));
+    }
 }
