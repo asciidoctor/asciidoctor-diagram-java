@@ -7,7 +7,7 @@ public class CommandProcessor {
     private final Map<String, DiagramGenerator> generatorMap;
 
     public CommandProcessor() {
-        this(CommandServer.getGenerators());
+        this(SocketCommandServer.getGenerators());
     }
 
     CommandProcessor(Map<String, DiagramGenerator> generators) {

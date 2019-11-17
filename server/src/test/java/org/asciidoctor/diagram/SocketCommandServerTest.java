@@ -12,14 +12,14 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class CommandServerTest {
+public class SocketCommandServerTest {
     @Test
     public void testHTTPMessage() throws IOException {
         ServerSocket serverSocket = new ServerSocket(0);
         TestGenerator generator = new TestGenerator();
         Map<String, DiagramGenerator> generators = new HashMap<>();
         generators.put(generator.getName(), generator);
-        final CommandServer server = new CommandServer(serverSocket, generators);
+        final SocketCommandServer server = new SocketCommandServer(serverSocket, generators);
 
         Thread serverThread = new Thread(new Runnable() {
             @Override
@@ -64,7 +64,7 @@ public class CommandServerTest {
         TestGenerator generator = new TestGenerator();
         Map<String, DiagramGenerator> generators = new HashMap<>();
         generators.put(generator.getName(), generator);
-        final CommandServer server = new CommandServer(serverSocket, generators);
+        final SocketCommandServer server = new SocketCommandServer(serverSocket, generators);
 
         Thread serverThread = new Thread(new Runnable() {
             @Override
