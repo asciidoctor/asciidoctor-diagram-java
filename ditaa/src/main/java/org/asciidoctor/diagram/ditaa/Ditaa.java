@@ -3,16 +3,18 @@ package org.asciidoctor.diagram.ditaa;
 import org.asciidoctor.diagram.*;
 import org.stathissideris.ascii2image.core.CommandLineConverter;
 import org.stathissideris.ascii2image.core.ConversionOptions;
+import org.stathissideris.ascii2image.core.RenderingOptions;
 import org.stathissideris.ascii2image.graphics.BitmapRenderer;
+import org.stathissideris.ascii2image.graphics.Diagram;
+import org.stathissideris.ascii2image.graphics.SVGRenderer;
 import org.stathissideris.ascii2image.text.TextGrid;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -57,24 +59,57 @@ public class Ditaa implements DiagramGenerator
             options.add("--svg");
         }
 
-        ConversionOptions conversionOptions;
-
         String optionString = request.headers.getValue(HTTPHeader.OPTIONS);
         if (optionString != null) {
             options.addAll(Arrays.asList(optionString.split(" ")));
         }
+        ConversionOptions conversionOptions = ConversionOptions.parseCommandLineOptions(options.toArray(new String[0]));
 
+        ByteArrayInputStream input = new ByteArrayInputStream(request.data);
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        CommandLineConverter.convert(
-                options.toArray(new String[0]),
-                new ByteArrayInputStream(request.data),
-                output
-        );
+
+        doConvert(input, output, conversionOptions);
+
         output.close();
 
         return new ResponseData(
                 format,
                 output.toByteArray()
         );
+    }
+
+    private static void doConvert(InputStream input, OutputStream output, ConversionOptions options) throws IOException {
+        Diagram diagram = convertToImage(input, options);
+        RenderingOptions.ImageType imageType = options.renderingOptions.getImageType();
+        if (imageType == RenderingOptions.ImageType.SVG) {
+            String content = (new SVGRenderer()).renderToImage(diagram, options.renderingOptions);
+            OutputStreamWriter writer = new OutputStreamWriter(output, Charset.forName("UTF-8"));
+
+            try {
+                writer.write(content);
+            } finally {
+                writer.flush();
+            }
+        } else {
+            BufferedImage image = (new BitmapRenderer()).renderToImage(diagram, options.renderingOptions);
+            MemoryCacheImageOutputStream memCache = new MemoryCacheImageOutputStream(output);
+            ImageIO.write(image, imageType.getFormatName(), memCache);
+            memCache.flush();
+        }
+
+    }
+
+    private static Diagram convertToImage(InputStream input, ConversionOptions options) throws IOException {
+        TextGrid grid = new TextGrid();
+        if (options.processingOptions.getCustomShapes() != null) {
+            grid.addToMarkupTags(options.processingOptions.getCustomShapes().keySet());
+        }
+
+        grid.loadFrom(input, options.processingOptions);
+        if (options.processingOptions.printDebugOutput()) {
+            grid.printDebug();
+        }
+
+        return new Diagram(grid, options);
     }
 }
