@@ -13,6 +13,7 @@ public class MimeType {
 
     public static final MimeType PNG = parse("image/png");
     public static final MimeType SVG = parse("image/svg+xml");
+    public static final MimeType TEXT_PLAIN = parse("text/plain");
     public static final MimeType TEXT_PLAIN_ASCII = parse("text/plain; charset=us-ascii");
     public static final MimeType TEXT_PLAIN_UTF8 = parse("text/plain; charset=utf-8");
     public static final MimeType JSON_UTF8 = parse("application/json; charset=utf-8");

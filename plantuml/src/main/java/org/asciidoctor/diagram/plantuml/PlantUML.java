@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -78,8 +79,9 @@ public class PlantUML implements DiagramGenerator
             fileFormat = new FileFormatOption(FileFormat.SVG);
         } else if (format.equals(MimeType.TEXT_PLAIN_UTF8)) {
             fileFormat = new FileFormatOption(FileFormat.UTXT);
-        } else if (format.equals(MimeType.TEXT_PLAIN_ASCII)) {
+        } else if (format.equals(MimeType.TEXT_PLAIN)) {
             fileFormat = new FileFormatOption(FileFormat.ATXT);
+            format = MimeType.parse(MimeType.TEXT_PLAIN.toString() + ";charset=" + Charset.defaultCharset().name().toLowerCase());
         } else {
             throw new IOException("Unsupported output format: " + format);
         }
