@@ -21,8 +21,8 @@ subprojects {
     group = 'org.asciidoctor'
 
     dependencies {
-        compile fileTree('lib')
-        testCompile 'junit:junit:4.11'
+        implementation fileTree('lib')
+        testImplementation 'junit:junit:4.11'
     }
 
     compileJava {
@@ -33,6 +33,19 @@ subprojects {
     task zip(type: Zip) {
         from jar
         from configurations.runtime
+    }
+
+    task testJar(type: Jar, dependsOn: testClasses, group: 'Build') {
+        classifier = 'tests'
+        from sourceSets.test.output
+    }
+
+    configurations {
+        tests
+    }
+
+    artifacts {
+        tests testJar
     }
 }
 

@@ -15,6 +15,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -41,19 +42,9 @@ public class Ditaa implements DiagramGenerator
             throw new IOException("Unsupported output format: " + format);
         }
 
-        MimeType contentType = request.headers.getValue(HTTPHeader.CONTENT_TYPE);
-        if (contentType == null) {
-            contentType = DEFAULT_CONTENT_TYPE;
-        }
-
-        String charset = contentType.parameters.get("charset");
-        if (charset == null) {
-            charset = DEFAULT_CHARSET;
-        }
-
         java.util.List<String> options = new ArrayList();
         options.add("--encoding");
-        options.add(charset);
+        options.add(StandardCharsets.UTF_8.name());
 
         if (format.equals(MimeType.SVG)) {
             options.add("--svg");
@@ -65,7 +56,7 @@ public class Ditaa implements DiagramGenerator
         }
         ConversionOptions conversionOptions = ConversionOptions.parseCommandLineOptions(options.toArray(new String[0]));
 
-        ByteArrayInputStream input = new ByteArrayInputStream(request.data);
+        InputStream input = new ByteArrayInputStream(request.asString().getBytes(StandardCharsets.UTF_8));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
         doConvert(input, output, conversionOptions);
@@ -83,7 +74,7 @@ public class Ditaa implements DiagramGenerator
         RenderingOptions.ImageType imageType = options.renderingOptions.getImageType();
         if (imageType == RenderingOptions.ImageType.SVG) {
             String content = (new SVGRenderer()).renderToImage(diagram, options.renderingOptions);
-            OutputStreamWriter writer = new OutputStreamWriter(output, Charset.forName("UTF-8"));
+            OutputStreamWriter writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
 
             try {
                 writer.write(content);

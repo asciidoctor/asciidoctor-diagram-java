@@ -1,3 +1,5 @@
+rootProject.name = 'asciidoctor-diagram-java'
+
 include 'server'
 include 'ditaa'
 //include 'jeuclid'

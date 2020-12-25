@@ -1,4 +1,5 @@
 dependencies {
-    compile project(':server')
-    testCompile project(':server')
+    implementation project(':server')
+    testImplementation project(':server')
+    testImplementation project(path: ':server', configuration: 'tests')
 }

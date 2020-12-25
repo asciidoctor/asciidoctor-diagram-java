@@ -1,16 +1,15 @@
-package org.asciidoctor.diagram.plantuml;
+package org.asciidoctor.diagram;
 
-import org.asciidoctor.diagram.HTTPHeader;
 import org.asciidoctor.diagram.MimeType;
-import org.asciidoctor.diagram.Response;
 import org.asciidoctor.diagram.ResponseData;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.XMLEvent;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -31,11 +30,11 @@ public class Assert
         assertEquals(MimeType.SVG, response.format);
 
         try {
-            XMLEventReader reader = XMLInputFactory.newFactory().createXMLEventReader(new ByteArrayInputStream(response.data));
-            XMLEvent event = reader.nextTag();
-            assertEquals("svg", event.asStartElement().getName().getLocalPart());
-            reader.close();
-        } catch (XMLStreamException e) {
+            Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new ByteArrayInputStream(response.data));
+            Element rootElement = dom.getDocumentElement();
+            String tag = rootElement.getTagName();
+            assertEquals("svg", tag);
+        } catch (SAXException | ParserConfigurationException | IOException e) {
             fail(e.getMessage());
         }
     }
