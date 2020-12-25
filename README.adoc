@@ -1,7 +1,7 @@
 = Asciidoctor Diagram Java Tools
 Pepijn Van_Eeckhoudt
 
-image:https://github.com/asciidoctor/asciidoctor-diagram/workflows/Linux%20unit%20tests/badge.svg?branch=master["Linux Build Status", link="https://github.com/asciidoctor/asciidoctor-diagram-java/actions?query=workflow%3ACI"]
+image:https://github.com/asciidoctor/asciidoctor-diagram-java/workflows/CI/badge.svg["Build Status", link="https://github.com/asciidoctor/asciidoctor-diagram-java/actions?query=workflow%3ACI"]
 
 This project provides wrapper code for the PlantUML and Ditaa libraries that simplifies usage of these libraries from
 Ruby.
