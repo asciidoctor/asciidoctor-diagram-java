@@ -1,6 +1,7 @@
 package org.asciidoctor.diagram;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Map;
 
 /**
@@ -17,6 +18,8 @@ public class StdInOutCommandServer extends AbstractCommandServer {
     }
 
     public void processRequests() throws IOException {
-        processRequests(System.in, System.out);
+        PrintStream stdOut = System.out;
+        System.setOut(System.err);
+        processRequests(System.in, stdOut);
     }
 }
