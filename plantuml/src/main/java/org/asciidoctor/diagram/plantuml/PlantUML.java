@@ -20,6 +20,7 @@ import java.util.List;
 public class PlantUML implements DiagramGenerator
 {
     private static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.PNG;
+    private static final int DEFAULT_IMAGE_SIZE_LIMIT = 4096;
 
     private static Method SET_DOT_EXE;
     private static Object SET_DOT_EXE_INSTANCE;
@@ -94,42 +95,53 @@ public class PlantUML implements DiagramGenerator
         }
         option.setFileFormatOption(fileFormat);
 
+        int sizeLimit = DEFAULT_IMAGE_SIZE_LIMIT;
+        String sizeLimitHeader = request.headers.getValue("X-PlantUML-SizeLimit");
+        if (sizeLimitHeader != null) {
+            sizeLimit = Integer.parseInt(sizeLimitHeader);
+        }
+
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-        synchronized (this) {
-            try {
-                SET_DOT_EXE.invoke(SET_DOT_EXE_INSTANCE, graphviz != null ? graphviz.getAbsolutePath() : null);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new IOException(e);
-            }
+        GraphvizUtils.setLocalImageLimit(sizeLimit);
+        try {
+            synchronized (this) {
+                try {
+                    SET_DOT_EXE.invoke(SET_DOT_EXE_INSTANCE, graphviz != null ? graphviz.getAbsolutePath() : null);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new IOException(e);
+                }
 
-            BlockUmlBuilder builder = new BlockUmlBuilder(
-                    option.getConfig(),
-                    "UTF-8",
-                    Defines.createEmpty(),
-                    new StringReader(request.asString()),
-                    FileSystem.getInstance().getCurrentDir(),
-                    "<input>"
-            );
-            List<BlockUml> blocks = builder.getBlockUmls();
+                BlockUmlBuilder builder = new BlockUmlBuilder(
+                        option.getConfig(),
+                        "UTF-8",
+                        Defines.createEmpty(),
+                        new StringReader(request.asString()),
+                        FileSystem.getInstance().getCurrentDir(),
+                        "<input>"
+                );
+                List<BlockUml> blocks = builder.getBlockUmls();
 
-            if (blocks.size() == 0) {
-                throw new IOException("No @startuml found");
-            } else {
-                for (BlockUml b : blocks) {
-                    Diagram system = b.getDiagram();
-                    if (system instanceof PSystemError) {
-                        system.exportDiagram(byteArrayOutputStream, 0, new FileFormatOption(FileFormat.UTXT));
-                        String error = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
-                        throw new IOException(error);
-                    }
+                if (blocks.size() == 0) {
+                    throw new IOException("No @startuml found");
+                } else {
+                    for (BlockUml b : blocks) {
+                        Diagram system = b.getDiagram();
+                        if (system instanceof PSystemError) {
+                            system.exportDiagram(byteArrayOutputStream, 0, new FileFormatOption(FileFormat.UTXT));
+                            String error = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+                            throw new IOException(error);
+                        }
 
-                    if (system.getNbImages() > 0) {
-                        system.exportDiagram(byteArrayOutputStream, 0, fileFormat);
-                        break;
+                        if (system.getNbImages() > 0) {
+                            system.exportDiagram(byteArrayOutputStream, 0, fileFormat);
+                            break;
+                        }
                     }
                 }
             }
+        } finally {
+            GraphvizUtils.removeLocalLimitSize();
         }
 
         return new ResponseData(
