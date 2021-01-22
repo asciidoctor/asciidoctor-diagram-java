@@ -1,0 +1,103 @@
+package org.asciidoctor.diagram.plantuml;
+
+import net.sourceforge.plantuml.*;
+import net.sourceforge.plantuml.core.Diagram;
+import net.sourceforge.plantuml.core.UmlSource;
+import net.sourceforge.plantuml.error.PSystemError;
+import net.sourceforge.plantuml.preproc.Defines;
+import org.asciidoctor.diagram.*;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.List;
+
+public class PlantUMLPreprocessor implements DiagramGenerator
+{
+    private static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.TEXT_PLAIN_UTF8;
+
+    @Override
+    public String getName()
+    {
+        return "plantumlpreprocessor";
+    }
+
+    @Override
+    public ResponseData generate(Request request) throws IOException {
+        MimeType format = request.headers.getValue(HTTPHeader.ACCEPT);
+
+        if (format == null) {
+            format = DEFAULT_OUTPUT_FORMAT;
+        }
+
+        if (!format.equals(MimeType.TEXT_PLAIN_UTF8)) {
+            throw new IOException("Unsupported output format: " + format);
+        }
+
+        String preprocessed;
+        synchronized (this) {
+            preprocessed = preprocess(
+                    request.asString(),
+                    request.headers.getValue("X-PlantUML-Config")
+            );
+        }
+
+        return new ResponseData(
+                format,
+                preprocessed.getBytes(StandardCharsets.UTF_8)
+        );
+    }
+
+    static String preprocess(String input, String plantUmlConfig) throws IOException {
+        Option option = new Option();
+
+        if (plantUmlConfig != null) {
+            option.initConfig(plantUmlConfig);
+        }
+
+        StringBuilder out = new StringBuilder();
+
+        BlockUmlBuilder builder = new BlockUmlBuilder(
+                option.getConfig(),
+                "UTF-8",
+                Defines.createEmpty(),
+                new StringReader(input),
+                FileSystem.getInstance().getCurrentDir(),
+                "<input>"
+        );
+        List<BlockUml> blocks = builder.getBlockUmls();
+
+        if (blocks.size() == 0) {
+            throw new IOException("No @startuml found");
+        } else {
+            for (BlockUml b : blocks) {
+                Diagram system = b.getDiagram();
+                if (system instanceof PSystemError) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    system.exportDiagram(baos, 0, new FileFormatOption(FileFormat.UTXT));
+                    throw new IOException(new String(baos.toByteArray(), StandardCharsets.UTF_8));
+                }
+
+                UmlSource source = system.getSource();
+                if (source != null) {
+                    Iterator<StringLocated> lines = source.iterator2();
+                    while(lines.hasNext()) {
+                        StringLocated line = lines.next();
+                        if (out.length() > 0) {
+                            out.append('\n');
+                        }
+                        out.append(line.getString());
+                    }
+                }
+            }
+        }
+
+        if (out.length() == 0) {
+            return "@startuml\n@enduml";
+        } else {
+            return out.toString();
+        }
+    }
+}

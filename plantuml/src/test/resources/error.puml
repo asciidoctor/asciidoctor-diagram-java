@@ -1,0 +1,4 @@
+@startuml
+class A
+!include does_not_exist.puml
+@enduml

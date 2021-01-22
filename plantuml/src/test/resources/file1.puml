@@ -1,0 +1,4 @@
+@startuml
+class A
+!include file2.puml
+@enduml
