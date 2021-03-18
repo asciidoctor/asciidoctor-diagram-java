@@ -5,6 +5,7 @@ import net.sourceforge.plantuml.core.Diagram;
 import net.sourceforge.plantuml.core.UmlSource;
 import net.sourceforge.plantuml.error.PSystemError;
 import net.sourceforge.plantuml.preproc.Defines;
+import net.sourceforge.plantuml.security.SFile;
 import org.asciidoctor.diagram.*;
 
 import java.io.ByteArrayOutputStream;
@@ -40,7 +41,8 @@ public class PlantUMLPreprocessor implements DiagramGenerator
         synchronized (this) {
             preprocessed = preprocess(
                     request.asString(),
-                    request.headers.getValue("X-PlantUML-Config")
+                    request.headers.getValue("X-PlantUML-Config"),
+                    request.headers.getValue("X-PlantUML-Basedir")
             );
         }
 
@@ -50,7 +52,7 @@ public class PlantUMLPreprocessor implements DiagramGenerator
         );
     }
 
-    static String preprocess(String input, String plantUmlConfig) throws IOException {
+    static String preprocess(String input, String plantUmlConfig, String baseDir) throws IOException {
         Option option = new Option();
 
         if (plantUmlConfig != null) {
@@ -64,7 +66,7 @@ public class PlantUMLPreprocessor implements DiagramGenerator
                 "UTF-8",
                 Defines.createEmpty(),
                 new StringReader(input),
-                FileSystem.getInstance().getCurrentDir(),
+                baseDir != null ? new SFile(baseDir) : FileSystem.getInstance().getCurrentDir(),
                 "<input>"
         );
         List<BlockUml> blocks = builder.getBlockUmls();
