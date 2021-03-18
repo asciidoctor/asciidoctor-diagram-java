@@ -1,20 +1,17 @@
 package org.asciidoctor.diagram.ditaa;
 
 import org.asciidoctor.diagram.*;
-import org.stathissideris.ascii2image.core.CommandLineConverter;
-import org.stathissideris.ascii2image.core.ConversionOptions;
-import org.stathissideris.ascii2image.core.RenderingOptions;
-import org.stathissideris.ascii2image.graphics.BitmapRenderer;
-import org.stathissideris.ascii2image.graphics.Diagram;
-import org.stathissideris.ascii2image.graphics.SVGRenderer;
-import org.stathissideris.ascii2image.text.TextGrid;
+import org.stathissideris.ditaa.core.ConversionOptions;
+import org.stathissideris.ditaa.core.RenderingOptions;
+import org.stathissideris.ditaa.graphics.BitmapRenderer;
+import org.stathissideris.ditaa.graphics.Diagram;
+import org.stathissideris.ditaa.graphics.SVGRenderer;
+import org.stathissideris.ditaa.text.TextGrid;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,7 +95,7 @@ public class Ditaa implements DiagramGenerator
 
         grid.loadFrom(input, options.processingOptions);
         if (options.processingOptions.printDebugOutput()) {
-            grid.printDebug();
+            grid.printDebug(System.out);
         }
 
         return new Diagram(grid, options);
