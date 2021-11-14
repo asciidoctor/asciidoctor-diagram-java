@@ -42,6 +42,18 @@ public class PlantUMLPreprocessorTest {
         );
     }
 
+    @Test
+    public void testIncludeDir() throws IOException
+    {
+        System.setProperty("plantuml.include.path", getAbsolutePath("include/"));
+
+        String output = preprocess("@startuml\n!include common.puml\nclass B\n@enduml");
+        Assert.assertEquals(
+                "@startuml\nclass C\nclass B\n@enduml",
+                output
+        );
+    }
+
     @Test(expected = IOException.class)
     public void testIncludeErrors() throws IOException
     {

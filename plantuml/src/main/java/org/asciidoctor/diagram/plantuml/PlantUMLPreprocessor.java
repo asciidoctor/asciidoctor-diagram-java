@@ -37,13 +37,28 @@ public class PlantUMLPreprocessor implements DiagramGenerator
             throw new IOException("Unsupported output format: " + format);
         }
 
+        String default_includeDir = System.getProperty("plantuml.include.path");
         String preprocessed;
-        synchronized (this) {
-            preprocessed = preprocess(
-                    request.asString(),
-                    request.headers.getValue("X-PlantUML-Config"),
-                    request.headers.getValue("X-PlantUML-Basedir")
-            );
+
+        try {
+            synchronized (this) {
+                String includeDir = request.headers.getValue("X-PlantUML-IncludeDir");
+                if (includeDir != null) {
+                    System.setProperty("plantuml.include.path", includeDir);
+                }
+
+                preprocessed = preprocess(
+                        request.asString(),
+                        request.headers.getValue("X-PlantUML-Config"),
+                        request.headers.getValue("X-PlantUML-Basedir")
+                );
+            }
+        } finally {
+            if (default_includeDir != null){
+                System.setProperty("plantuml.include.path", default_includeDir);
+            } else {
+                System.clearProperty("plantuml.include.path");
+            }
         }
 
         return new ResponseData(
