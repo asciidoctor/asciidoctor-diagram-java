@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class PlantUMLPreprocessorTest {
 
@@ -45,9 +49,13 @@ public class PlantUMLPreprocessorTest {
     @Test
     public void testIncludeDir() throws IOException
     {
-        System.setProperty("plantuml.include.path", getAbsolutePath("include/"));
+        System.setProperty("plantuml.include.path", Paths.get("doesnotexist").toAbsolutePath().toString());
 
-        String output = preprocess("@startuml\n!include common.puml\nclass B\n@enduml");
+        String output = preprocess(
+                "@startuml\n!include common.puml\nclass B\n@enduml",
+                Paths.get("someotherdir").toAbsolutePath().toString(),
+                getAbsolutePath("include/")
+        );
         Assert.assertEquals(
                 "@startuml\nclass C\nclass B\n@enduml",
                 output
@@ -73,8 +81,19 @@ public class PlantUMLPreprocessorTest {
     }
 
     private String preprocess(String input) throws IOException {
+        return preprocess(input, Collections.emptyList());
+    }
+
+    private String preprocess(String input, String... includeDirs) throws IOException {
+        return preprocess(input, Arrays.asList(includeDirs));
+    }
+
+    private String preprocess(String input, List<String> includeDirs) throws IOException {
         HTTPHeaders h = new HTTPHeaders();
         h.putValue(HTTPHeader.CONTENT_TYPE, MimeType.TEXT_PLAIN_UTF8);
+        for (String includeDir : includeDirs) {
+            h.putValue("X-PlantUML-IncludeDir", includeDir);
+        }
 
         ResponseData responseData = new PlantUMLPreprocessor().generate(new Request(
                 URI.create("/plantumlpreprocessor"),

@@ -9,11 +9,13 @@ import net.sourceforge.plantuml.security.SFile;
 import org.asciidoctor.diagram.*;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PlantUMLPreprocessor implements DiagramGenerator
 {
@@ -42,9 +44,9 @@ public class PlantUMLPreprocessor implements DiagramGenerator
 
         try {
             synchronized (this) {
-                String includeDir = request.headers.getValue("X-PlantUML-IncludeDir");
-                if (includeDir != null) {
-                    System.setProperty("plantuml.include.path", includeDir);
+                List<String> includeDirs = request.headers.getValues("X-PlantUML-IncludeDir");
+                if (!includeDirs.isEmpty()) {
+                    System.setProperty("plantuml.include.path", includeDirs.stream().collect(Collectors.joining(File.pathSeparator)));
                 }
 
                 preprocessed = preprocess(

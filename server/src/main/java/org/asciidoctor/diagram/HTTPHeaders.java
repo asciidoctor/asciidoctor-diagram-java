@@ -1,35 +1,40 @@
 package org.asciidoctor.diagram;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class HTTPHeaders {
-    private Map<String, String> headers;
+    private Map<String, List<String>> headers;
 
     public HTTPHeaders() {
-        this.headers = new HashMap<String, String>();
+        this.headers = new HashMap<>();
     }
 
     public void putValue(String name, String value) {
-        headers.put(name, value);
-    }
-
-    public String getValue(String name) {
-        return headers.get(name);
+        headers.computeIfAbsent(name, k -> new ArrayList<>()).add(value);
     }
 
     public <V> void putValue(HTTPHeader<V> h, V value) {
         putValue(h.name, h.formatValue(value));
     }
 
+    public String getValue(String name) {
+        List<String> values = getValues(name);
+        return !values.isEmpty() ? values.get(0) : null;
+    }
+
     public <V> V getValue(HTTPHeader<V> h) {
-        String value = getValue(h.name);
-        if (value == null) {
-            return null;
-        } else {
-            return h.parseValue(value);
-        }
+        List<V> values = getValues(h);
+        return !values.isEmpty() ? values.get(0) : null;
+    }
+
+    public List<String> getValues(String name) {
+        List<String> values = headers.get(name);
+        return values == null ? Collections.emptyList() : values;
+    }
+
+    public <V> List<V> getValues(HTTPHeader<V> h) {
+        return getValues(h.name).stream().map(h::parseValue).collect(Collectors.toList());
     }
 
     public Iterable<String> keys() {
