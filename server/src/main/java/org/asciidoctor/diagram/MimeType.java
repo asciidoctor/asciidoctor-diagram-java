@@ -23,16 +23,12 @@ public class MimeType {
     public final Map<String, String> parameters;
 
     public static MimeType parse(String type) {
-        return new MimeType(type);
-    }
-
-    private MimeType(String type) {
         Matcher typeMatcher = MIME_TYPE_RE.matcher(type);
         if (!typeMatcher.find()) {
             throw new IllegalArgumentException("Invalid mime type: " + type);
         }
-        mainType = typeMatcher.group(1).toLowerCase();
-        subType = typeMatcher.group(2).toLowerCase();
+        String mainType = typeMatcher.group(1).toLowerCase();
+        String subType = typeMatcher.group(2).toLowerCase();
 
         String paramString = type.substring(typeMatcher.end(2));
 
@@ -43,7 +39,14 @@ public class MimeType {
             params.put(paramMatcher.group(1), paramMatcher.group(2));
         }
 
-        parameters = Collections.unmodifiableMap(params);
+        Map<String, String> parameters = Collections.unmodifiableMap(params);
+        return new MimeType(mainType, subType, parameters);
+    }
+
+    private MimeType(String mainType, String subType, Map<String, String> parameters) {
+        this.mainType = mainType;
+        this.subType = subType;
+        this.parameters = parameters;
     }
 
     @Override
@@ -84,5 +87,15 @@ public class MimeType {
         }
 
         return b.toString();
+    }
+
+    public boolean isSameType(MimeType other) {
+        return mainType.equals(other.mainType) && subType.equals(other.subType);
+    }
+
+    public MimeType withParameter(String name, String value) {
+        Map<String, String> params = new HashMap<>(parameters);
+        params.put(name, value);
+        return new MimeType(mainType, subType, Collections.unmodifiableMap(params));
     }
 }
