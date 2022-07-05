@@ -94,7 +94,7 @@ public class Structurizr implements DiagramGenerator {
         );
 
         if (viewKey != null) {
-            views = views.filter(view -> view.getKey().equalsIgnoreCase(viewKey));
+            views = views.filter(view -> view.getKey().equals(viewKey));
         }
 
         return views.findFirst().orElseThrow(() -> new IOException("Could not find view with key '" + viewKey + "'"));
