@@ -1,6 +1,9 @@
 dependencies {
-    compile project(':server')
-    compile 'net.sourceforge.jeuclid:jeuclid-core:3.1.9'
-    compile 'org.apache.xmlgraphics:batik-svggen:1.7'
-    testCompile project(':server')
+    implementation project(':server')
+    implementation 'de.rototor.jeuclid:jeuclid-core:3.1.14'
+    implementation 'org.apache.xmlgraphics:batik-svg-anim:1.16'
+    implementation 'org.apache.xmlgraphics:batik-svg-dom:1.16'
+    implementation 'org.apache.xmlgraphics:batik-svg-parser:1.16'
+    implementation 'org.apache.xmlgraphics:batik-svggen:1.16'
+    testImplementation project(':server')
 }

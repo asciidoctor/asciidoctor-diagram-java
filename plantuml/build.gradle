@@ -1,7 +1,9 @@
 dependencies {
     implementation project(':server')
-    implementation 'org.apache.xmlgraphics:batik-svg-dom:1.7'
-    implementation 'org.apache.xmlgraphics:batik-svggen:1.7'
+    implementation 'org.apache.xmlgraphics:batik-svg-anim:1.16'
+    implementation 'org.apache.xmlgraphics:batik-svg-dom:1.16'
+    implementation 'org.apache.xmlgraphics:batik-svg-parser:1.16'
+    implementation 'org.apache.xmlgraphics:batik-svggen:1.16'
     implementation 'net.sourceforge.plantuml:plantuml:1.2022.14'
     testImplementation project(':server')
     testImplementation project(path: ':server', configuration: 'tests')
