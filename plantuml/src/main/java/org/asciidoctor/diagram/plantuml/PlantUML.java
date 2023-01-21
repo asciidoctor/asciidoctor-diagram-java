@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlantUML implements DiagramGenerator
@@ -95,6 +96,12 @@ public class PlantUML implements DiagramGenerator
         }
         option.setFileFormatOption(fileFormat);
 
+        List<String> config = new ArrayList<>(option.getConfig());
+        String plantUmlTheme = request.headers.getValue("X-PlantUML-Theme");
+        if (plantUmlTheme != null) {
+            config.add(0, "!theme " + plantUmlTheme);
+        }
+
         int sizeLimit = DEFAULT_IMAGE_SIZE_LIMIT;
         String sizeLimitHeader = request.headers.getValue("X-PlantUML-SizeLimit");
         if (sizeLimitHeader != null) {
@@ -113,7 +120,7 @@ public class PlantUML implements DiagramGenerator
                 }
 
                 BlockUmlBuilder builder = new BlockUmlBuilder(
-                        option.getConfig(),
+                        config,
                         "UTF-8",
                         Defines.createEmpty(),
                         new StringReader(request.asString()),
