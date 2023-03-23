@@ -2,7 +2,6 @@ package org.asciidoctor.diagram.plantuml;
 
 import net.sourceforge.plantuml.*;
 import net.sourceforge.plantuml.core.Diagram;
-import net.sourceforge.plantuml.cucadiagram.dot.GraphvizUtils;
 import net.sourceforge.plantuml.error.PSystemError;
 import net.sourceforge.plantuml.preproc.Defines;
 import org.asciidoctor.diagram.*;
@@ -26,18 +25,48 @@ public class PlantUML implements DiagramGenerator
     private static Method SET_DOT_EXE;
     private static Object SET_DOT_EXE_INSTANCE;
 
+    private static Method SET_LOCAL_IMAGE_LIMIT;
+    private static Object SET_LOCAL_IMAGE_LIMIT_INSTANCE;
+
+    private static Method REMOVE_LOCAL_LIMIT_SIZE;
+    private static Object REMOVE_LOCAL_LIMIT_SIZE_INSTANCE;
+
     static {
+        ClassLoader classLoader = PlantUML.class.getClassLoader();
         try {
-            SET_DOT_EXE = OptionFlags.class.getMethod("setDotExecutable", String.class);
-            SET_DOT_EXE_INSTANCE = OptionFlags.getInstance();
-        } catch (NoSuchMethodException e) {
+            Class<?> optionFlags = classLoader.loadClass("net.sourceforge.plantuml.OptionFlags");
+            SET_DOT_EXE = optionFlags.getMethod("setDotExecutable", String.class);
+            SET_DOT_EXE_INSTANCE = optionFlags.getMethod("getInstance").invoke(null);
+        } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
             // Try next option
         }
 
         try {
-            SET_DOT_EXE = GraphvizUtils.class.getMethod("setDotExecutable", String.class);
+            Class<?> utils = classLoader.loadClass("net.sourceforge.plantuml.dot.GraphvizUtils");
+
+            SET_DOT_EXE = utils.getMethod("setDotExecutable", String.class);
             SET_DOT_EXE_INSTANCE = null;
-        } catch (NoSuchMethodException e) {
+
+            SET_LOCAL_IMAGE_LIMIT = utils.getMethod("setLocalImageLimit", Integer.TYPE);
+            SET_LOCAL_IMAGE_LIMIT_INSTANCE = null;
+
+            REMOVE_LOCAL_LIMIT_SIZE = utils.getMethod("removeLocalLimitSize");
+            REMOVE_LOCAL_LIMIT_SIZE_INSTANCE = null;
+        } catch (NoSuchMethodException | ClassNotFoundException e) {
+            // Try next option
+        }
+
+        try {
+            Class<?> utils = classLoader.loadClass("net.sourceforge.plantuml.cucadiagram.dot.GraphvizUtils");
+            SET_DOT_EXE = utils.getMethod("setDotExecutable", String.class);
+            SET_DOT_EXE_INSTANCE = null;
+
+            SET_LOCAL_IMAGE_LIMIT = utils.getMethod("setLocalImageLimit", Integer.TYPE);
+            SET_LOCAL_IMAGE_LIMIT_INSTANCE = null;
+
+            REMOVE_LOCAL_LIMIT_SIZE = utils.getMethod("removeLocalLimitSize");
+            REMOVE_LOCAL_LIMIT_SIZE_INSTANCE = null;
+        } catch (NoSuchMethodException | ClassNotFoundException e) {
             // Try next option
         }
 
@@ -110,45 +139,45 @@ public class PlantUML implements DiagramGenerator
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-        GraphvizUtils.setLocalImageLimit(sizeLimit);
         try {
-            synchronized (this) {
-                try {
+            SET_LOCAL_IMAGE_LIMIT.invoke(SET_LOCAL_IMAGE_LIMIT_INSTANCE, sizeLimit);
+            try {
+                synchronized (this) {
                     SET_DOT_EXE.invoke(SET_DOT_EXE_INSTANCE, graphviz != null ? graphviz.getAbsolutePath() : null);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new IOException(e);
-                }
 
-                BlockUmlBuilder builder = new BlockUmlBuilder(
-                        config,
-                        "UTF-8",
-                        Defines.createEmpty(),
-                        new StringReader(request.asString()),
-                        FileSystem.getInstance().getCurrentDir(),
-                        "<input>"
-                );
-                List<BlockUml> blocks = builder.getBlockUmls();
+                    BlockUmlBuilder builder = new BlockUmlBuilder(
+                            config,
+                            "UTF-8",
+                            Defines.createEmpty(),
+                            new StringReader(request.asString()),
+                            FileSystem.getInstance().getCurrentDir(),
+                            "<input>"
+                    );
+                    List<BlockUml> blocks = builder.getBlockUmls();
 
-                if (blocks.size() == 0) {
-                    throw new IOException("No @startuml found");
-                } else {
-                    for (BlockUml b : blocks) {
-                        Diagram system = b.getDiagram();
-                        if (system instanceof PSystemError) {
-                            system.exportDiagram(byteArrayOutputStream, 0, new FileFormatOption(FileFormat.UTXT));
-                            String error = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
-                            throw new IOException(error);
-                        }
+                    if (blocks.size() == 0) {
+                        throw new IOException("No @startuml found");
+                    } else {
+                        for (BlockUml b : blocks) {
+                            Diagram system = b.getDiagram();
+                            if (system instanceof PSystemError) {
+                                system.exportDiagram(byteArrayOutputStream, 0, new FileFormatOption(FileFormat.UTXT));
+                                String error = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+                                throw new IOException(error);
+                            }
 
-                        if (system.getNbImages() > 0) {
-                            system.exportDiagram(byteArrayOutputStream, 0, fileFormat);
-                            break;
+                            if (system.getNbImages() > 0) {
+                                system.exportDiagram(byteArrayOutputStream, 0, fileFormat);
+                                break;
+                            }
                         }
                     }
                 }
+            } finally {
+                REMOVE_LOCAL_LIMIT_SIZE.invoke(REMOVE_LOCAL_LIMIT_SIZE_INSTANCE);
             }
-        } finally {
-            GraphvizUtils.removeLocalLimitSize();
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new IOException(e);
         }
 
         return new ResponseData(

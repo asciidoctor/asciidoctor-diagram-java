@@ -6,6 +6,7 @@ import net.sourceforge.plantuml.core.UmlSource;
 import net.sourceforge.plantuml.error.PSystemError;
 import net.sourceforge.plantuml.preproc.Defines;
 import net.sourceforge.plantuml.security.SFile;
+import net.sourceforge.plantuml.text.StringLocated;
 import org.asciidoctor.diagram.*;
 
 import java.io.ByteArrayOutputStream;
