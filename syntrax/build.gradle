@@ -1,0 +1,12 @@
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation project(':server')
+    testImplementation project(':server')
+    testImplementation project(path: ':server', configuration: 'tests')
+    implementation 'org.atp-fivt:jsyntrax:1.31'
+}
