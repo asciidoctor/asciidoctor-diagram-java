@@ -10,6 +10,7 @@ import com.structurizr.export.mermaid.MermaidDiagramExporter;
 import com.structurizr.export.plantuml.C4PlantUMLExporter;
 import com.structurizr.export.plantuml.StructurizrPlantUMLExporter;
 import com.structurizr.view.*;
+import io.github.goto1134.structurizr.export.d2.D2Exporter;
 import org.asciidoctor.diagram.*;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ public class Structurizr implements DiagramGenerator {
     static final MimeType PLANTUML_C4 = MimeType.parse("text/x-plantuml-c4");
     static final MimeType MERMAID = MimeType.parse("text/x-mermaid");
     static final MimeType GRAPHVIZ = MimeType.parse("text/vnd.graphviz");
+    static final MimeType D2 = MimeType.parse("text/x-d2");
 
     private static final MimeType DEFAULT_OUTPUT_FORMAT = PLANTUML;
 
@@ -50,6 +52,8 @@ public class Structurizr implements DiagramGenerator {
             exporter = new MermaidDiagramExporter();
         } else if (format.isSameType(PLANTUML)) {
             exporter = new StructurizrPlantUMLExporter();
+        } else if (format.isSameType(D2)) {
+            exporter = new D2Exporter();
         } else {
             throw new IOException("Unsupported output format: " + format);
         }
