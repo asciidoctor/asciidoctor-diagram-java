@@ -26,13 +26,14 @@ subprojects {
     }
 
     compileJava {
-        sourceCompatibility = '1.8'
-        targetCompatibility = '1.8'
+        sourceCompatibility = '11'
+        targetCompatibility = '11'
     }
 
     task zip(type: Zip) {
         from jar
-        from configurations.runtime
+        from configurations.runtimeClasspath.allArtifacts.files
+        from configurations.runtimeClasspath
     }
 
     task testJar(type: Jar, dependsOn: testClasses, group: 'Build') {
