@@ -15,6 +15,7 @@ import org.asciidoctor.diagram.*;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.stream.Stream;
 
 public class Structurizr implements DiagramGenerator {
@@ -63,11 +64,10 @@ public class Structurizr implements DiagramGenerator {
         }
 
         String viewKey = request.headers.getValue(VIEW_HEADER);
+        String includeDir = request.headers.getValue("X-Structurizr-IncludeDir");
 
-        StructurizrDslParser structurizrDslParser = new StructurizrDslParser();
         try {
-            structurizrDslParser.parse(request.asString());
-            Workspace workspace = structurizrDslParser.getWorkspace();
+            Workspace workspace = parseWorkspace(request, includeDir);
             View view = findView(workspace, viewKey);
             Diagram diagram = exportView(exporter, view);
 
@@ -80,8 +80,32 @@ public class Structurizr implements DiagramGenerator {
         }
     }
 
+    private Workspace parseWorkspace(Request request, String includeDir) throws StructurizrDslParserException, IOException {
+        synchronized (this) {
+            String baseDirProperty = "user.dir";
+            String userDir = System.getProperty(baseDirProperty);
+            try {
+                if (includeDir != null) {
+                    System.setProperty(baseDirProperty, includeDir);
+                }
+                StructurizrDslParser structurizrDslParser = new StructurizrDslParser();
+                structurizrDslParser.parse(request.asString());
+                return structurizrDslParser.getWorkspace();
+            } finally {
+                if (userDir != null) {
+                    System.setProperty(baseDirProperty, userDir);
+                } else {
+                    System.clearProperty(baseDirProperty);
+                }
+            }
+        }
+    }
+
     private View findView(Workspace workspace, String viewKey) throws IOException {
         ViewSet viewSet = workspace.getViews();
+        if (viewKey != null) {
+            return viewSet.getViewWithKey(viewKey);
+        }
 
         Stream<? extends View> views = concatStreams(
                 viewSet.getCustomViews().stream(),
@@ -93,15 +117,11 @@ public class Structurizr implements DiagramGenerator {
                 viewSet.getDeploymentViews().stream()
         );
 
-        if (viewKey != null) {
-            views = views.filter(view -> view.getKey().equals(viewKey));
-        }
-
-        return views.findFirst().orElseThrow(() -> new IOException("Could not find view with key '" + viewKey + "'"));
+        return views.min(Comparator.comparing(View::getKey)).orElseThrow(() -> new IOException("Could not find view"));
     }
 
     @SafeVarargs
-    private final Stream<? extends View> concatStreams(Stream<? extends View> stream, Stream<? extends View>... streams) {
+    private Stream<? extends View> concatStreams(Stream<? extends View> stream, Stream<? extends View>... streams) {
         Stream<? extends View> s = stream;
         for (Stream<? extends View> other : streams) {
             s = Stream.concat(s, other);
