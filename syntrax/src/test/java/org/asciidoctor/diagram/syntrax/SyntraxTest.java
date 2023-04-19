@@ -1,26 +1,34 @@
 package org.asciidoctor.diagram.syntrax;
 
-import org.asciidoctor.diagram.*;
+import org.asciidoctor.diagram.Assert;
+import org.asciidoctor.diagram.HTTPHeader;
+import org.asciidoctor.diagram.HTTPHeaders;
+import org.asciidoctor.diagram.MimeType;
+import org.asciidoctor.diagram.Request;
+import org.asciidoctor.diagram.ResponseData;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class SyntraxTest {
 
-    public static final String SYNTRAX_INPUT = """
-            jsyntrax(stack(
-             line('attribute', '/(attribute) identifier', 'of'),
-             line(choice(toploop('/entity_designator', ','), 'others', 'all'), ':'),
-             line('/entity_class', 'is', '/expression', ';')
-            ),\s
-            [
-              'entity_class': 'https://www.google.com/#q=vhdl+entity+class',
-              '(attribute) identifier': 'http://en.wikipedia.com/wiki/VHDL'
-            ])""";
+    private static byte[] SYNTRAX_INPUT;
+
+    @BeforeClass
+    public static void setUP() {
+        try {
+            SYNTRAX_INPUT = Files.readAllBytes(Paths.get("src", "test", "resources", "testinput.spec"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
@@ -38,7 +46,7 @@ public class SyntraxTest {
         ResponseData response = new Syntrax().generate(new Request(
                 URI.create("/syntrax"),
                 h,
-                SYNTRAX_INPUT.getBytes(StandardCharsets.UTF_8)
+                SYNTRAX_INPUT
         ));
 
         Assert.assertIsSVG(response);
@@ -53,7 +61,7 @@ public class SyntraxTest {
         ResponseData response = new Syntrax().generate(new Request(
                 URI.create("/syntrax"),
                 h,
-                SYNTRAX_INPUT.getBytes(StandardCharsets.UTF_8)
+                SYNTRAX_INPUT
         ));
 
         Assert.assertIsPNG(response);
@@ -71,7 +79,7 @@ public class SyntraxTest {
         new Syntrax().generate(new Request(
                 URI.create("/syntrax"),
                 h,
-                SYNTRAX_INPUT.getBytes(StandardCharsets.UTF_8)
+                SYNTRAX_INPUT
         ));
     }
 }
