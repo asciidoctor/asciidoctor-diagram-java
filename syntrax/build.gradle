@@ -1,6 +1,6 @@
 dependencies {
     implementation project(':server')
-    implementation 'org.atp-fivt:jsyntrax:1.35'
+    implementation 'org.atp-fivt:jsyntrax:1.36'
     testImplementation project(':server')
     testImplementation project(path: ':server', configuration: 'tests')
 }
