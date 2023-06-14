@@ -72,6 +72,9 @@ public class Structurizr implements DiagramGenerator {
 
         try {
             Workspace workspace = parseWorkspace(request, includeDir);
+
+            prepareWorkspaceForExport(workspace);
+
             View view = findView(workspace, viewKey);
             Diagram diagram = exportView(exporter, view);
 
@@ -79,7 +82,9 @@ public class Structurizr implements DiagramGenerator {
                     format.withParameter("charset", charsetName),
                     diagram.getDefinition().getBytes(charset)
             );
-        } catch (StructurizrDslParserException e) {
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
             throw new IOException(e);
         }
     }
@@ -102,6 +107,18 @@ public class Structurizr implements DiagramGenerator {
                     System.clearProperty(baseDirProperty);
                 }
             }
+        }
+    }
+
+    private static void prepareWorkspaceForExport(Workspace workspace) throws Exception {
+        // Copied from https://github.com/structurizr/cli/blob/master/src/main/java/com/structurizr/cli/export/ExportCommand.java#L141
+
+        // Load themes that are referenced using HTTP(S) URIs
+        ThemeUtils.loadThemes(workspace);
+
+        // Ensure at least one view exists
+        if (workspace.getViews().isEmpty()) {
+            workspace.getViews().createDefaultViews();
         }
     }
 
