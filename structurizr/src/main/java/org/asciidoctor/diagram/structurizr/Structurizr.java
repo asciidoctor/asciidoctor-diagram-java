@@ -2,6 +2,7 @@ package org.asciidoctor.diagram.structurizr;
 
 import com.structurizr.Workspace;
 import com.structurizr.dsl.StructurizrDslParser;
+import com.structurizr.dsl.StructurizrDslParserAccessor;
 import com.structurizr.dsl.StructurizrDslParserException;
 import com.structurizr.export.AbstractDiagramExporter;
 import com.structurizr.export.Diagram;
@@ -13,6 +14,7 @@ import com.structurizr.view.*;
 import io.github.goto1134.structurizr.export.d2.D2Exporter;
 import org.asciidoctor.diagram.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -90,24 +92,15 @@ public class Structurizr implements DiagramGenerator {
     }
 
     private Workspace parseWorkspace(Request request, String includeDir) throws StructurizrDslParserException, IOException {
-        synchronized (this) {
-            String baseDirProperty = "user.dir";
-            String userDir = System.getProperty(baseDirProperty);
-            try {
-                if (includeDir != null) {
-                    System.setProperty(baseDirProperty, includeDir);
-                }
-                StructurizrDslParser structurizrDslParser = new StructurizrDslParser();
-                structurizrDslParser.parse(request.asString());
-                return structurizrDslParser.getWorkspace();
-            } finally {
-                if (userDir != null) {
-                    System.setProperty(baseDirProperty, userDir);
-                } else {
-                    System.clearProperty(baseDirProperty);
-                }
-            }
+        File baseDir;
+        if (includeDir != null) {
+            baseDir = new File(includeDir);
+        } else {
+            baseDir = new File(System.getProperty("user.dir"));
         }
+        StructurizrDslParser structurizrDslParser = new StructurizrDslParser();
+        StructurizrDslParserAccessor.parse(structurizrDslParser, request.asString(), baseDir);
+        return structurizrDslParser.getWorkspace();
     }
 
     private static void prepareWorkspaceForExport(Workspace workspace) throws Exception {
