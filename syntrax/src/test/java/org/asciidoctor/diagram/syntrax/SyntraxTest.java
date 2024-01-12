@@ -6,22 +6,24 @@ import org.asciidoctor.diagram.HTTPHeaders;
 import org.asciidoctor.diagram.MimeType;
 import org.asciidoctor.diagram.Request;
 import org.asciidoctor.diagram.ResponseData;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class SyntraxTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class SyntraxTest {
 
     private static byte[] SYNTRAX_INPUT;
 
-    @BeforeClass
-    public static void setUP() {
+    @BeforeAll
+    static void setUP() {
         try {
             SYNTRAX_INPUT = Files.readAllBytes(Paths.get("src", "test", "resources", "testinput.spec"));
         } catch (IOException e) {
@@ -29,16 +31,13 @@ public class SyntraxTest {
         }
     }
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
-    public void testTestGetName() {
-        org.junit.Assert.assertEquals("syntrax", new Syntrax().getName());
+    void testGetName() {
+        Assertions.assertEquals("syntrax", new Syntrax().getName());
     }
 
     @Test
-    public void testGenerateSVG() throws IOException {
+    void generateSVG() throws IOException {
         HTTPHeaders h = new HTTPHeaders();
         h.putValue(HTTPHeader.CONTENT_TYPE, MimeType.TEXT_PLAIN_UTF8);
         h.putValue(HTTPHeader.ACCEPT, MimeType.SVG);
@@ -53,7 +52,7 @@ public class SyntraxTest {
     }
 
     @Test
-    public void testGeneratePNG() throws IOException {
+    void generatePNG() throws IOException {
         HTTPHeaders h = new HTTPHeaders();
         h.putValue(HTTPHeader.CONTENT_TYPE, MimeType.TEXT_PLAIN_UTF8);
         h.putValue(HTTPHeader.ACCEPT, MimeType.PNG);
@@ -68,18 +67,19 @@ public class SyntraxTest {
     }
 
     @Test
-    public void testGenerateWithWrongFormat() throws IOException {
-        exceptionRule.expect(IOException.class);
-        exceptionRule.expectMessage("Unsupported output format");
+    void generateWithWrongFormat() throws IOException {
+        Throwable exception = assertThrows(IOException.class, () -> {
 
-        HTTPHeaders h = new HTTPHeaders();
-        h.putValue(HTTPHeader.CONTENT_TYPE, MimeType.TEXT_PLAIN_UTF8);
-        h.putValue(HTTPHeader.ACCEPT, MimeType.TEXT_PLAIN_UTF8);
+            HTTPHeaders h = new HTTPHeaders();
+            h.putValue(HTTPHeader.CONTENT_TYPE, MimeType.TEXT_PLAIN_UTF8);
+            h.putValue(HTTPHeader.ACCEPT, MimeType.TEXT_PLAIN_UTF8);
 
-        new Syntrax().generate(new Request(
-                URI.create("/syntrax"),
-                h,
-                SYNTRAX_INPUT
-        ));
+            new Syntrax().generate(new Request(
+                    URI.create("/syntrax"),
+                    h,
+                    SYNTRAX_INPUT
+            ));
+        });
+        assertTrue(exception.getMessage().contains("Unsupported output format"));
     }
 }

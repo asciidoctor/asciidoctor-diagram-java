@@ -1,6 +1,6 @@
 package org.asciidoctor.diagram;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -10,11 +10,11 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SocketCommandServerTest {
+class SocketCommandServerTest {
     @Test
-    public void testHTTPMessage() throws IOException {
+    void hTTPMessage() throws IOException {
         ServerSocket serverSocket = new ServerSocket(0);
         TestGenerator generator = new TestGenerator();
         Map<String, DiagramGenerator> generators = new HashMap<>();
@@ -59,7 +59,7 @@ public class SocketCommandServerTest {
     }
 
     @Test
-    public void testHTTPError() throws IOException {
+    void hTTPError() throws IOException {
         ServerSocket serverSocket = new ServerSocket(0);
         TestGenerator generator = new TestGenerator();
         Map<String, DiagramGenerator> generators = new HashMap<>();

@@ -1,8 +1,8 @@
 package org.asciidoctor.diagram.plantuml;
 
 import org.asciidoctor.diagram.*;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,40 +14,42 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class PlantUMLPreprocessorTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class PlantUMLPreprocessorTest {
 
     @Test
-    public void testSimple() throws IOException
+    void simple() throws IOException
     {
         String output = preprocess("@startuml\nA -> B\n@enduml");
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "@startuml\nA -> B\n@enduml",
                 output
         );
     }
 
     @Test
-    public void testSimpleInclude() throws IOException
+    void simpleInclude() throws IOException
     {
         String output = preprocess("@startuml\n!include " + getAbsolutePath("file2.puml") + "\n@enduml");
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "@startuml\nclass B\n@enduml",
                 output
         );
     }
 
     @Test
-    public void testTransitiveInclude() throws IOException
+    void transitiveInclude() throws IOException
     {
         String output = preprocess("@startuml\n!include " + getAbsolutePath("file1.puml") + "\n@enduml");
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "@startuml\nclass A\nclass B\n@enduml",
                 output
         );
     }
 
     @Test
-    public void testIncludeDir() throws IOException
+    void includeDir() throws IOException
     {
         System.setProperty("plantuml.include.path", Paths.get("doesnotexist").toAbsolutePath().toString());
 
@@ -56,20 +58,22 @@ public class PlantUMLPreprocessorTest {
                 Paths.get("someotherdir").toAbsolutePath().toString(),
                 getAbsolutePath("include/")
         );
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "@startuml\nclass C\nclass B\n@enduml",
                 output
         );
     }
 
-    @Test(expected = IOException.class)
-    public void testIncludeErrors() throws IOException
+    @Test
+    void includeErrors() throws IOException
     {
-        String output = preprocess("@startuml\n!include " + getAbsolutePath("error.puml") + "\n@enduml");
-        Assert.assertEquals(
-                "@startuml\nclass A\nclass B\n@enduml",
-                output
-        );
+        assertThrows(IOException.class, () -> {
+            String output = preprocess("@startuml\n!include " + getAbsolutePath("error.puml") + "\n@enduml");
+            Assertions.assertEquals(
+                    "@startuml\nclass A\nclass B\n@enduml",
+                    output
+            );
+        });
     }
 
     private String getAbsolutePath(String fileName) throws IOException {

@@ -25,7 +25,8 @@ subprojects {
 
     dependencies {
         implementation fileTree('lib')
-        testImplementation 'junit:junit:4.11'
+        testImplementation(platform("org.junit:junit-bom:5.10.1"))
+        testImplementation("org.junit.jupiter:junit-jupiter")
     }
 
     compileJava {
@@ -42,6 +43,10 @@ subprojects {
     task testJar(type: Jar, dependsOn: testClasses, group: 'Build') {
         archiveClassifier = 'tests'
         from sourceSets.test.output
+    }
+
+    test {
+        useJUnitPlatform()
     }
 
     configurations {

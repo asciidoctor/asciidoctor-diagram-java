@@ -2,15 +2,14 @@ package org.asciidoctor.diagram.structurizr;
 
 import java.nio.file.Path;
 import org.asciidoctor.diagram.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-public class StructurizrTest {
+class StructurizrTest {
     private static final String INPUT = """
             workspace {
                 !include dsl-include.dsl
@@ -44,7 +43,7 @@ public class StructurizrTest {
             """;
 
     @Test
-    public void testSimple() throws IOException
+    void simple() throws IOException
     {
         HTTPHeaders h = new HTTPHeaders();
         h.putValue(HTTPHeader.CONTENT_TYPE, MimeType.TEXT_PLAIN_UTF8);
