@@ -2,7 +2,6 @@ package org.asciidoctor.diagram.structurizr;
 
 import com.structurizr.Workspace;
 import com.structurizr.dsl.StructurizrDslParser;
-import com.structurizr.dsl.StructurizrDslParserAccessor;
 import com.structurizr.dsl.StructurizrDslParserException;
 import com.structurizr.export.AbstractDiagramExporter;
 import com.structurizr.export.Diagram;
@@ -99,7 +98,7 @@ public class Structurizr implements DiagramGenerator {
             baseDir = new File(System.getProperty("user.dir"));
         }
         StructurizrDslParser structurizrDslParser = new StructurizrDslParser();
-        StructurizrDslParserAccessor.parse(structurizrDslParser, request.asString(), baseDir);
+        structurizrDslParser.parse(request.asString(), baseDir);
         return structurizrDslParser.getWorkspace();
     }
 

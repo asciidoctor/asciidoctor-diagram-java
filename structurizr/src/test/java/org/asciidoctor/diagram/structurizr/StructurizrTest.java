@@ -1,5 +1,6 @@
 package org.asciidoctor.diagram.structurizr;
 
+import java.nio.file.Path;
 import org.asciidoctor.diagram.*;
 import org.junit.Test;
 
@@ -12,12 +13,12 @@ import static org.junit.Assert.assertTrue;
 public class StructurizrTest {
     private static final String INPUT = """
             workspace {
-            
+                !include dsl-include.dsl
                 model {
                     user = person "User" "A user of my software system."
                     softwareSystem = softwareSystem "Software System" "My software system."
             
-                    user -> softwareSystem "Uses"
+                    user -> softwareSystem "Uses" ${SOAP}
                 }
             
                 views {
@@ -49,6 +50,7 @@ public class StructurizrTest {
         h.putValue(HTTPHeader.CONTENT_TYPE, MimeType.TEXT_PLAIN_UTF8);
         h.putValue(HTTPHeader.ACCEPT, Structurizr.PLANTUML);
         h.putValue(Structurizr.VIEW_HEADER, "SystemContext");
+        h.putValue("X-Structurizr-IncludeDir", Path.of("src/test/resources/stdin.dsl").toAbsolutePath().toString());
 
         ResponseData responseData = new Structurizr().generate(new Request(
                 URI.create("/structurizr"),
@@ -60,5 +62,6 @@ public class StructurizrTest {
 
         String text = new String(responseData.data, responseData.format.parameters.getOrDefault("charset", "utf-8"));
         assertTrue(text.startsWith("@startuml"));
+        assertTrue(text.contains("SOAP/XML"));
     }
 }

@@ -17,6 +17,7 @@ subprojects {
     apply plugin: 'java'
 
     repositories {
+        mavenLocal()
         mavenCentral()
     }
 
