@@ -101,7 +101,7 @@ class StructurizrTest {
         h.putValue(HTTPHeader.ACCEPT, Structurizr.PLANTUML);
         h.putValue(Structurizr.VIEW_HEADER, "SystemContext");
         // path needs to be a (non-existing) file inside the targeted directory.
-        h.putValue("X-Structurizr-IncludeDir", Path.of("src/test/resources/stdin").toAbsolutePath().toString());
+        h.putValue("X-Structurizr-IncludeDir", Path.of("src/test/resources").toAbsolutePath().toString());
 
         ResponseData responseData = new Structurizr().generate(new Request(
             URI.create("/structurizr"),

@@ -98,7 +98,8 @@ public class Structurizr implements DiagramGenerator {
             baseDir = new File(System.getProperty("user.dir"));
         }
         StructurizrDslParser structurizrDslParser = new StructurizrDslParser();
-        structurizrDslParser.parse(request.asString(), baseDir);
+        // path needs to be a (possibly non-existing) file inside the targeted directory.
+        structurizrDslParser.parse(request.asString(), new File(baseDir, "stdin"));
         return structurizrDslParser.getWorkspace();
     }
 
