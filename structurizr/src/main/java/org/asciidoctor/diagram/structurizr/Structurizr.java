@@ -2,7 +2,6 @@ package org.asciidoctor.diagram.structurizr;
 
 import com.structurizr.Workspace;
 import com.structurizr.dsl.StructurizrDslParser;
-import com.structurizr.dsl.StructurizrDslParserAccessor;
 import com.structurizr.dsl.StructurizrDslParserException;
 import com.structurizr.export.AbstractDiagramExporter;
 import com.structurizr.export.Diagram;
@@ -16,12 +15,75 @@ import org.asciidoctor.diagram.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InaccessibleObjectException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class Structurizr implements DiagramGenerator {
+    @FunctionalInterface
+    interface ParseDsl {
+        void parse(StructurizrDslParser parser, String dsl, File file) throws StructurizrDslParserException;
+    }
+
+    private static final ParseDsl PARSE = createParseDsl();
+
+    static ParseDsl createParseDsl() {
+        Class<StructurizrDslParser> parserClass = StructurizrDslParser.class;
+
+        // Public API added in Structurizr 2.0.0
+        try {
+            Method parseString = parserClass.getDeclaredMethod("parse", String.class, File.class);
+            return (parser, dsl, file) -> {
+                try {
+                    parseString.invoke(parser, dsl, file);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    Throwable targetException = e.getTargetException();
+                    if (targetException instanceof StructurizrDslParserException) {
+                        throw (StructurizrDslParserException)targetException;
+                    } else {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+        } catch (NoSuchMethodException e) {
+            // Try next
+        }
+
+        // Internal API in Structurizr < 2.0.0
+        try {
+            Method parseString = parserClass.getDeclaredMethod("parse", List.class, File.class);
+            parseString.setAccessible(true);
+            return (parser, dsl, file) -> {
+                List<String> lines = Arrays.asList(dsl.split("\\r?\\n"));
+
+                try {
+                    parseString.invoke(parser, lines, file);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    Throwable targetException = e.getTargetException();
+                    if (targetException instanceof StructurizrDslParserException) {
+                        throw (StructurizrDslParserException)targetException;
+                    } else {
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+        } catch (NoSuchMethodException | InaccessibleObjectException e) {
+            // Try next
+        }
+
+        throw new IllegalStateException("Could not find DSL parsing method");
+    }
+
     static final String VIEW_HEADER = "X-Structurizr-View";
 
     static final MimeType PLANTUML = MimeType.parse("text/x-plantuml");
@@ -99,7 +161,7 @@ public class Structurizr implements DiagramGenerator {
             baseDir = new File(System.getProperty("user.dir"));
         }
         StructurizrDslParser structurizrDslParser = new StructurizrDslParser();
-        StructurizrDslParserAccessor.parse(structurizrDslParser, request.asString(), baseDir);
+        PARSE.parse(structurizrDslParser, request.asString(), new File(baseDir, "stdin"));
         return structurizrDslParser.getWorkspace();
     }
 
