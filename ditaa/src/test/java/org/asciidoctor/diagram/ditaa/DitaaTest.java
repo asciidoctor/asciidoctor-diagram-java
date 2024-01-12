@@ -9,15 +9,17 @@ import java.nio.charset.Charset;
 
 public class DitaaTest {
     public static final String DITAA_INPUT =
-            "+--------+   +-------+    +-------+\n" +
-            "|        | --+ ditaa +--> |       |\n" +
-            "|  Text  |   +-------+    |diagram|\n" +
-            "|Document|   |!magic!|    |       |\n" +
-            "|     {d}|   |       |    |       |\n" +
-            "+---+----+   +-------+    +-------+\n" +
-            "    :                         ^\n" +
-            "    |       Lots of work      |\n" +
-            "    +-------------------------+";
+            """
+            +--------+   +-------+    +-------+
+            |        | --+ ditaa +--> |       |
+            |  Text  |   +-------+    |diagram|
+            |Document|   |!magic!|    |       |
+            |     {d}|   |       |    |       |
+            +---+----+   +-------+    +-------+
+                :                         ^
+                |       Lots of work      |
+                +-------------------------+\
+            """;
 
     @Test
     public void testPNGGeneration() throws IOException

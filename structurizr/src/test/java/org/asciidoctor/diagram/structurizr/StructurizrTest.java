@@ -10,35 +10,37 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class StructurizrTest {
-    private static final String INPUT = "workspace {\n" +
-            "\n" +
-            "    model {\n" +
-            "        user = person \"User\" \"A user of my software system.\"\n" +
-            "        softwareSystem = softwareSystem \"Software System\" \"My software system.\"\n" +
-            "\n" +
-            "        user -> softwareSystem \"Uses\"\n" +
-            "    }\n" +
-            "\n" +
-            "    views {\n" +
-            "        systemContext softwareSystem \"SystemContext\" {\n" +
-            "            include *\n" +
-            "            autoLayout\n" +
-            "        }\n" +
-            "\n" +
-            "        styles {\n" +
-            "            element \"Software System\" {\n" +
-            "                background #1168bd\n" +
-            "                color #ffffff\n" +
-            "            }\n" +
-            "            element \"Person\" {\n" +
-            "                shape person\n" +
-            "                background #08427b\n" +
-            "                color #ffffff\n" +
-            "            }\n" +
-            "        }\n" +
-            "    }\n" +
-            "    \n" +
-            "}";
+    private static final String INPUT = """
+            workspace {
+            
+                model {
+                    user = person "User" "A user of my software system."
+                    softwareSystem = softwareSystem "Software System" "My software system."
+            
+                    user -> softwareSystem "Uses"
+                }
+            
+                views {
+                    systemContext softwareSystem "SystemContext" {
+                        include *
+                        autoLayout
+                    }
+            
+                    styles {
+                        element "Software System" {
+                            background #1168bd
+                            color #ffffff
+                        }
+                        element "Person" {
+                            shape person
+                            background #08427b
+                            color #ffffff
+                        }
+                    }
+                }
+               \s
+            }\
+            """;
 
     @Test
     public void testSimple() throws IOException

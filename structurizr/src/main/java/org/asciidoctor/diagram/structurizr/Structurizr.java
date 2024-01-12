@@ -144,20 +144,20 @@ public class Structurizr implements DiagramGenerator {
     }
 
     private Diagram exportView(AbstractDiagramExporter exporter, View view) throws IOException {
-        if (view instanceof CustomView) {
-            return exporter.export((CustomView) view);
-        } else if (view instanceof SystemLandscapeView) {
-            return exporter.export((SystemLandscapeView) view);
-        } else if (view instanceof SystemContextView) {
-            return exporter.export((SystemContextView) view);
-        } else if (view instanceof ContainerView) {
-            return exporter.export((ContainerView) view);
-        } else if (view instanceof ComponentView) {
-            return exporter.export((ComponentView) view);
-        } else if (view instanceof DynamicView) {
-            return exporter.export((DynamicView) view);
-        } else if (view instanceof DeploymentView) {
-            return exporter.export((DeploymentView) view);
+        if (view instanceof CustomView customView) {
+            return exporter.export(customView);
+        } else if (view instanceof SystemLandscapeView landscapeView) {
+            return exporter.export(landscapeView);
+        } else if (view instanceof SystemContextView contextView) {
+            return exporter.export(contextView);
+        } else if (view instanceof ContainerView containerView) {
+            return exporter.export(containerView);
+        } else if (view instanceof ComponentView componentView) {
+            return exporter.export(componentView);
+        } else if (view instanceof DynamicView dynamicView) {
+            return exporter.export(dynamicView);
+        } else if (view instanceof DeploymentView deploymentView) {
+            return exporter.export(deploymentView);
         } else {
             throw new IOException("Cannot export diagram of type " + view.getClass());
         }
