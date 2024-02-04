@@ -176,7 +176,7 @@ public class PlantUML implements DiagramGenerator
                                 throw new IOException(error);
                             }
 
-                            if (pathToGraphViz.equalsIgnoreCase(SMETANA)) {
+                            if (SMETANA.equalsIgnoreCase(pathToGraphViz)) {
                                 if (system instanceof TitledDiagram) {
                                     ((TitledDiagram) system).setUseSmetana(true);
                                 } else {
