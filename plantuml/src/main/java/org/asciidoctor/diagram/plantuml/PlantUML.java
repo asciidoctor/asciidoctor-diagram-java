@@ -19,8 +19,13 @@ import java.util.List;
 
 public class PlantUML implements DiagramGenerator
 {
+    public static final String X_GRAPHVIZ = "X-Graphviz";
+    public static final String X_PLANT_UML_CONFIG = "X-PlantUML-Config";
+    public static final String X_PLANT_UML_SIZE_LIMIT = "X-PlantUML-SizeLimit";
+
     private static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.PNG;
     private static final int DEFAULT_IMAGE_SIZE_LIMIT = 4096;
+    private static final String SMETANA = "smetana";
 
     private static Method SET_DOT_EXE;
     private static Object SET_DOT_EXE_INSTANCE;
@@ -85,13 +90,18 @@ public class PlantUML implements DiagramGenerator
     public ResponseData generate(Request request) throws IOException {
         File graphviz;
 
-        String pathToGraphViz = request.headers.getValue("X-Graphviz");
+        String pathToGraphViz = request.headers.getValue(X_GRAPHVIZ);
         if (pathToGraphViz != null) {
-            File graphvizParam = new File(pathToGraphViz);
-            if (graphvizParam.canExecute()) {
-                graphviz = graphvizParam;
+            if (pathToGraphViz.equalsIgnoreCase(SMETANA)) {
+                pathToGraphViz = SMETANA;
+                graphviz = null;
             } else {
-                throw new IOException("GraphViz 'dot' tool at '" + pathToGraphViz + "' is not executable");
+                File graphvizParam = new File(pathToGraphViz);
+                if (graphvizParam.canExecute()) {
+                    graphviz = graphvizParam;
+                } else {
+                    throw new IOException("GraphViz 'dot' tool at '" + pathToGraphViz + "' is not executable");
+                }
             }
         } else {
             graphviz = null;
@@ -119,7 +129,7 @@ public class PlantUML implements DiagramGenerator
 
         Option option = new Option();
 
-        String plantUmlConfig = request.headers.getValue("X-PlantUML-Config");
+        String plantUmlConfig = request.headers.getValue(X_PLANT_UML_CONFIG);
         if (plantUmlConfig != null) {
             option.initConfig(plantUmlConfig);
         }
@@ -132,7 +142,7 @@ public class PlantUML implements DiagramGenerator
         }
 
         int sizeLimit = DEFAULT_IMAGE_SIZE_LIMIT;
-        String sizeLimitHeader = request.headers.getValue("X-PlantUML-SizeLimit");
+        String sizeLimitHeader = request.headers.getValue(X_PLANT_UML_SIZE_LIMIT);
         if (sizeLimitHeader != null) {
             sizeLimit = Integer.parseInt(sizeLimitHeader);
         }
@@ -164,6 +174,14 @@ public class PlantUML implements DiagramGenerator
                                 system.exportDiagram(byteArrayOutputStream, 0, new FileFormatOption(FileFormat.UTXT));
                                 String error = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
                                 throw new IOException(error);
+                            }
+
+                            if (pathToGraphViz.equalsIgnoreCase(SMETANA)) {
+                                if (system instanceof TitledDiagram) {
+                                    ((TitledDiagram) system).setUseSmetana(true);
+                                } else {
+                                    throw new IOException("Cannot use Smetana layout engine with diagram class " + system.getClass().getSimpleName());
+                                }
                             }
 
                             if (system.getNbImages() > 0) {
