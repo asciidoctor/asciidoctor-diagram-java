@@ -42,7 +42,7 @@ public class PlantUML implements DiagramGenerator
             Class<?> optionFlags = classLoader.loadClass("net.sourceforge.plantuml.OptionFlags");
             SET_DOT_EXE = optionFlags.getMethod("setDotExecutable", String.class);
             SET_DOT_EXE_INSTANCE = optionFlags.getMethod("getInstance").invoke(null);
-        } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
+        } catch (ReflectiveOperationException | RuntimeException e) {
             // Try next option
         }
 
@@ -57,7 +57,7 @@ public class PlantUML implements DiagramGenerator
 
             REMOVE_LOCAL_LIMIT_SIZE = utils.getMethod("removeLocalLimitSize");
             REMOVE_LOCAL_LIMIT_SIZE_INSTANCE = null;
-        } catch (NoSuchMethodException | ClassNotFoundException e) {
+        } catch (ReflectiveOperationException | RuntimeException e) {
             // Try next option
         }
 
@@ -71,12 +71,12 @@ public class PlantUML implements DiagramGenerator
 
             REMOVE_LOCAL_LIMIT_SIZE = utils.getMethod("removeLocalLimitSize");
             REMOVE_LOCAL_LIMIT_SIZE_INSTANCE = null;
-        } catch (NoSuchMethodException | ClassNotFoundException e) {
+        } catch (ReflectiveOperationException | RuntimeException e) {
             // Try next option
         }
 
         if (SET_DOT_EXE == null) {
-            throw new RuntimeException("Could not find setDotExecutable method");
+            throw new IllegalStateException("Could not find setDotExecutable method");
         }
     }
 

@@ -52,7 +52,7 @@ public class Structurizr implements DiagramGenerator {
                     }
                 }
             };
-        } catch (NoSuchMethodException e) {
+        } catch (ReflectiveOperationException | RuntimeException e) {
             // Try next
         }
 
@@ -76,7 +76,7 @@ public class Structurizr implements DiagramGenerator {
                     }
                 }
             };
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException | RuntimeException e) {
             // Try next
         }
 
