@@ -15,7 +15,6 @@ import org.asciidoctor.diagram.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
@@ -77,7 +76,7 @@ public class Structurizr implements DiagramGenerator {
                     }
                 }
             };
-        } catch (NoSuchMethodException | InaccessibleObjectException e) {
+        } catch (Exception e) {
             // Try next
         }
 
@@ -197,7 +196,7 @@ public class Structurizr implements DiagramGenerator {
     }
 
     @SafeVarargs
-    private Stream<? extends View> concatStreams(Stream<? extends View> stream, Stream<? extends View>... streams) {
+    private final Stream<? extends View> concatStreams(Stream<? extends View> stream, Stream<? extends View>... streams) {
         Stream<? extends View> s = stream;
         for (Stream<? extends View> other : streams) {
             s = Stream.concat(s, other);
