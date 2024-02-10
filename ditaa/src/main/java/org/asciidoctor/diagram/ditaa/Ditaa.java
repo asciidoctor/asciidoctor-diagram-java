@@ -16,17 +16,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Ditaa implements DiagramGenerator
+public class Ditaa implements DiagramGeneratorFunction
 {
     public static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.PNG;
     public static final MimeType DEFAULT_CONTENT_TYPE = MimeType.TEXT_PLAIN_UTF8;
     public static final String DEFAULT_CHARSET = "UTF-8";
-
-    @Override
-    public String getName()
-    {
-        return "ditaa";
-    }
 
     @Override
     public ResponseData generate(Request request) throws IOException {

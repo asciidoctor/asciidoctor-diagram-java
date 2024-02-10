@@ -1,9 +1,5 @@
 package org.asciidoctor.diagram;
 
-import java.io.IOException;
-
-public interface DiagramGenerator {
+public interface DiagramGenerator extends DiagramGeneratorFunction {
     String getName();
-
-    ResponseData generate(Request request) throws IOException;
 }

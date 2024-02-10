@@ -17,15 +17,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PlantUMLPreprocessor implements DiagramGenerator
+public class PlantUMLPreprocessor implements DiagramGeneratorFunction
 {
     private static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.TEXT_PLAIN_UTF8;
-
-    @Override
-    public String getName()
-    {
-        return "plantumlpreprocessor";
-    }
 
     @Override
     public ResponseData generate(Request request) throws IOException {

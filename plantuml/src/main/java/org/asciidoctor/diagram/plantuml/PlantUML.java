@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlantUML implements DiagramGenerator
+public class PlantUML implements DiagramGeneratorFunction
 {
     public static final String X_GRAPHVIZ = "X-Graphviz";
     public static final String X_PLANT_UML_CONFIG = "X-PlantUML-Config";
@@ -78,12 +78,6 @@ public class PlantUML implements DiagramGenerator
         if (SET_DOT_EXE == null) {
             throw new IllegalStateException("Could not find setDotExecutable method");
         }
-    }
-
-    @Override
-    public String getName()
-    {
-        return "plantuml";
     }
 
     @Override

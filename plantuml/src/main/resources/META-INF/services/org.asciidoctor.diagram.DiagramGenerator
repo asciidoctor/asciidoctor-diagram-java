@@ -1,2 +1,2 @@
-org.asciidoctor.diagram.plantuml.PlantUML
-org.asciidoctor.diagram.plantuml.PlantUMLPreprocessor
+org.asciidoctor.diagram.plantuml.PlantUMLDiagramGenerator
+org.asciidoctor.diagram.plantuml.PlantUMLPreprocessorDiagramGenerator

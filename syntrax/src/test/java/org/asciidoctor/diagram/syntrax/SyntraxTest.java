@@ -34,7 +34,7 @@ public class SyntraxTest {
 
     @Test
     public void testTestGetName() {
-        org.junit.Assert.assertEquals("syntrax", new Syntrax().getName());
+        org.junit.Assert.assertEquals("syntrax", new SyntraxDiagramGenerator().getName());
     }
 
     @Test

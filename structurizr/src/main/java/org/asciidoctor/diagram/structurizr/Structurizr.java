@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class Structurizr implements DiagramGenerator {
+public class Structurizr implements DiagramGeneratorFunction {
     @FunctionalInterface
     interface ParseDsl {
         void parse(StructurizrDslParser parser, String dsl, File file) throws StructurizrDslParserException;
@@ -93,12 +93,6 @@ public class Structurizr implements DiagramGenerator {
 
     private static final MimeType DEFAULT_OUTPUT_FORMAT = PLANTUML;
 
-    @Override
-    public String getName() {
-        return "structurizr";
-    }
-
-    @Override
     public ResponseData generate(Request request) throws IOException {
         MimeType format = request.headers.getValue(HTTPHeader.ACCEPT);
 

@@ -13,13 +13,8 @@ import java.nio.charset.StandardCharsets;
 import static org.atpfivt.jsyntrax.Main.generateSVG;
 import static org.atpfivt.jsyntrax.Main.getStyleConfig;
 
-public class Syntrax implements DiagramGenerator {
+public class Syntrax implements DiagramGeneratorFunction {
     public static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.SVG;
-
-    @Override
-    public String getName() {
-        return "syntrax";
-    }
 
     @Override
     public ResponseData generate(Request request) throws IOException {
