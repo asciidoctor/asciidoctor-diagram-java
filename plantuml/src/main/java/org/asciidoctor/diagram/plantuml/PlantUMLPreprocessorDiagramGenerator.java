@@ -10,6 +10,6 @@ public class PlantUMLPreprocessorDiagramGenerator extends LazyDiagramGenerator {
 
     @Override
     protected DiagramGeneratorFunction createGenerator() throws Exception {
-        return new PlantUMLPreprocessorDiagramGenerator();
+        return new PlantUMLPreprocessor();
     }
 }
