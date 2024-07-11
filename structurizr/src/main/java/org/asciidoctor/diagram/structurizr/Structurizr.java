@@ -9,12 +9,15 @@ import com.structurizr.export.dot.DOTExporter;
 import com.structurizr.export.mermaid.MermaidDiagramExporter;
 import com.structurizr.export.plantuml.C4PlantUMLExporter;
 import com.structurizr.export.plantuml.StructurizrPlantUMLExporter;
+import com.structurizr.io.WorkspaceReaderException;
+import com.structurizr.io.json.JsonReader;
 import com.structurizr.view.*;
 import io.github.goto1134.structurizr.export.d2.D2Exporter;
 import org.asciidoctor.diagram.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
@@ -22,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class Structurizr implements DiagramGeneratorFunction {
@@ -146,7 +150,18 @@ public class Structurizr implements DiagramGeneratorFunction {
         }
     }
 
-    private Workspace parseWorkspace(Request request, String includeDir) throws StructurizrDslParserException, IOException {
+    private static final Pattern DSL = Pattern.compile("^\\s*workspace", Pattern.CASE_INSENSITIVE);
+
+    private Workspace parseWorkspace(Request request, String includeDir) throws StructurizrDslParserException, IOException, WorkspaceReaderException {
+        String content = request.asString();
+        if (DSL.matcher(content).find()) {
+            return parseDsl(content, includeDir);
+        } else {
+            return parseJson(content);
+        }
+    }
+
+    private static Workspace parseDsl(String content, String includeDir) throws StructurizrDslParserException {
         File baseDir;
         if (includeDir != null) {
             baseDir = new File(includeDir);
@@ -154,8 +169,12 @@ public class Structurizr implements DiagramGeneratorFunction {
             baseDir = new File(System.getProperty("user.dir"));
         }
         StructurizrDslParser structurizrDslParser = new StructurizrDslParser();
-        PARSE.parse(structurizrDslParser, request.asString(), new File(baseDir, "stdin"));
+        PARSE.parse(structurizrDslParser, content, new File(baseDir, "stdin"));
         return structurizrDslParser.getWorkspace();
+    }
+
+    private static Workspace parseJson(String content) throws WorkspaceReaderException, IOException {
+        return new JsonReader().read(new StringReader(content));
     }
 
     private static void prepareWorkspaceForExport(Workspace workspace) throws Exception {
