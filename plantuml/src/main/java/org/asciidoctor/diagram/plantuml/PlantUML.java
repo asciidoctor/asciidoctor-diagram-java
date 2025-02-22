@@ -4,6 +4,7 @@ import net.sourceforge.plantuml.*;
 import net.sourceforge.plantuml.core.Diagram;
 import net.sourceforge.plantuml.error.PSystemError;
 import net.sourceforge.plantuml.preproc.Defines;
+import net.sourceforge.plantuml.security.SFile;
 import org.asciidoctor.diagram.*;
 
 import java.io.ByteArrayOutputStream;
@@ -14,6 +15,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +24,9 @@ public class PlantUML implements DiagramGeneratorFunction
 {
     public static final String X_GRAPHVIZ = "X-Graphviz";
     public static final String X_PLANT_UML_CONFIG = "X-PlantUML-Config";
+    public static final String X_PLANT_UML_DEBUG = "X-PlantUML-Debug";
     public static final String X_PLANT_UML_SIZE_LIMIT = "X-PlantUML-SizeLimit";
+    public static final String X_PLANT_UML_THEME = "X-PlantUML-Theme";
 
     private static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.PNG;
     private static final int DEFAULT_IMAGE_SIZE_LIMIT = 4096;
@@ -116,7 +121,7 @@ public class PlantUML implements DiagramGeneratorFunction
             fileFormat = new FileFormatOption(FileFormat.UTXT);
         } else if (format.equals(MimeType.TEXT_PLAIN)) {
             fileFormat = new FileFormatOption(FileFormat.ATXT);
-            format = MimeType.parse(MimeType.TEXT_PLAIN.toString() + ";charset=" + Charset.defaultCharset().name().toLowerCase());
+            format = MimeType.parse(MimeType.TEXT_PLAIN + ";charset=" + Charset.defaultCharset().name().toLowerCase());
         } else {
             throw new IOException("Unsupported output format: " + format);
         }
@@ -127,10 +132,17 @@ public class PlantUML implements DiagramGeneratorFunction
         if (plantUmlConfig != null) {
             option.initConfig(plantUmlConfig);
         }
+
+        boolean debug = request.headers.getValue(X_PLANT_UML_DEBUG) != null;
+        if (debug) {
+            fileFormat.setDebugSvek(true);
+            option.setDebugSvek(true);
+        }
+
         option.setFileFormatOption(fileFormat);
 
         List<String> config = new ArrayList<>(option.getConfig());
-        String plantUmlTheme = request.headers.getValue("X-PlantUML-Theme");
+        String plantUmlTheme = request.headers.getValue(X_PLANT_UML_THEME);
         if (plantUmlTheme != null) {
             config.add(0, "!theme " + plantUmlTheme);
         }
@@ -141,7 +153,7 @@ public class PlantUML implements DiagramGeneratorFunction
             sizeLimit = Integer.parseInt(sizeLimitHeader);
         }
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] responseData = new byte[0];
 
         try {
             SET_LOCAL_IMAGE_LIMIT.invoke(SET_LOCAL_IMAGE_LIMIT_INSTANCE, sizeLimit);
@@ -149,22 +161,24 @@ public class PlantUML implements DiagramGeneratorFunction
                 synchronized (this) {
                     SET_DOT_EXE.invoke(SET_DOT_EXE_INSTANCE, graphviz != null ? graphviz.getAbsolutePath() : null);
 
+                    SFile currentDir = FileSystem.getInstance().getCurrentDir();
                     BlockUmlBuilder builder = new BlockUmlBuilder(
                             config,
                             "UTF-8",
                             Defines.createEmpty(),
                             new StringReader(request.asString()),
-                            FileSystem.getInstance().getCurrentDir(),
+                            currentDir,
                             "<input>"
                     );
                     List<BlockUml> blocks = builder.getBlockUmls();
 
-                    if (blocks.size() == 0) {
+                    if (blocks.isEmpty()) {
                         throw new IOException("No @startuml found");
                     } else {
                         for (BlockUml b : blocks) {
                             Diagram system = b.getDiagram();
                             if (system instanceof PSystemError) {
+                                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                                 system.exportDiagram(byteArrayOutputStream, 0, new FileFormatOption(FileFormat.UTXT));
                                 String error = new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
                                 throw new IOException(error);
@@ -179,9 +193,35 @@ public class PlantUML implements DiagramGeneratorFunction
                             }
 
                             if (system.getNbImages() > 0) {
+                                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                                 system.exportDiagram(byteArrayOutputStream, 0, fileFormat);
+                                responseData = byteArrayOutputStream.toByteArray();
                                 break;
                             }
+                        }
+
+                        if (debug) {
+                            MultipartWriter  multipartWriter = new MultipartWriter();
+                            multipartWriter.addPart("image", format, responseData);
+
+                            Path currentDirPath = currentDir.conv().toPath();
+
+                            Path svekDotPath = currentDirPath.resolve("svek.dot");
+                            if (Files.exists(svekDotPath)) {
+                                byte[] svekDot = Files.readAllBytes(svekDotPath);
+                                Files.deleteIfExists(svekDotPath);
+                                multipartWriter.addPart("svekdot", MimeType.TEXT_PLAIN_UTF8, svekDot);
+                            }
+
+                            if (Files.exists(currentDirPath)) {
+                                Path svekSvgPath = currentDirPath.resolve("svek.svg");
+                                byte[] svekSvg = Files.readAllBytes(svekSvgPath);
+                                Files.deleteIfExists(svekSvgPath);
+                                multipartWriter.addPart("sveksvg", MimeType.SVG, svekSvg);
+                            }
+
+                            format = multipartWriter.getFormat();
+                            responseData = multipartWriter.finish();
                         }
                     }
                 }
@@ -194,7 +234,7 @@ public class PlantUML implements DiagramGeneratorFunction
 
         return new ResponseData(
                 format,
-                byteArrayOutputStream.toByteArray()
+                responseData
         );
     }
 }
