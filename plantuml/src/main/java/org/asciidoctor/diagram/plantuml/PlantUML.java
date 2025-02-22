@@ -224,27 +224,31 @@ public class PlantUML implements DiagramGeneratorFunction
                         }
 
                         if (debug) {
-                            MultipartWriter  multipartWriter = new MultipartWriter();
-                            multipartWriter.addPart("image", format, responseData);
-
                             Path currentDirPath = currentDir.conv().toPath();
-
                             Path svekDotPath = currentDirPath.resolve("svek.dot");
-                            if (Files.exists(svekDotPath)) {
-                                byte[] svekDot = Files.readAllBytes(svekDotPath);
-                                Files.deleteIfExists(svekDotPath);
-                                multipartWriter.addPart("svekdot", MimeType.TEXT_PLAIN_UTF8, svekDot);
-                            }
+                            boolean svekDotExists = Files.exists(svekDotPath);
+                            Path svekSvgPath = currentDirPath.resolve("svek.svg");
+                            boolean svekSvgExists = Files.exists(svekSvgPath);
 
-                            if (Files.exists(currentDirPath)) {
-                                Path svekSvgPath = currentDirPath.resolve("svek.svg");
-                                byte[] svekSvg = Files.readAllBytes(svekSvgPath);
-                                Files.deleteIfExists(svekSvgPath);
-                                multipartWriter.addPart("sveksvg", MimeType.SVG, svekSvg);
-                            }
+                            if (svekDotExists || svekSvgExists) {
+                                MultipartWriter  multipartWriter = new MultipartWriter();
+                                multipartWriter.addPart("image", format, responseData);
 
-                            format = multipartWriter.getFormat();
-                            responseData = multipartWriter.finish();
+                                if (svekDotExists) {
+                                    byte[] svekDot = Files.readAllBytes(svekDotPath);
+                                    Files.deleteIfExists(svekDotPath);
+                                    multipartWriter.addPart("svekdot", MimeType.TEXT_PLAIN_UTF8, svekDot);
+                                }
+
+                                if (svekSvgExists) {
+                                    byte[] svekSvg = Files.readAllBytes(svekSvgPath);
+                                    Files.deleteIfExists(svekSvgPath);
+                                    multipartWriter.addPart("sveksvg", MimeType.SVG, svekSvg);
+                                }
+
+                                format = multipartWriter.getFormat();
+                                responseData = multipartWriter.finish();
+                            }
                         }
                     }
                 }
