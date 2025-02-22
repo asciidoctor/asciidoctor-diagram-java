@@ -31,6 +31,7 @@ public class PlantUML implements DiagramGeneratorFunction
     private static final MimeType DEFAULT_OUTPUT_FORMAT = MimeType.PNG;
     private static final int DEFAULT_IMAGE_SIZE_LIMIT = 4096;
     private static final String SMETANA = "smetana";
+    private static final String ELK = "elk";
 
     private static Method SET_DOT_EXE;
     private static Object SET_DOT_EXE_INSTANCE;
@@ -40,6 +41,8 @@ public class PlantUML implements DiagramGeneratorFunction
 
     private static Method REMOVE_LOCAL_LIMIT_SIZE;
     private static Object REMOVE_LOCAL_LIMIT_SIZE_INSTANCE;
+
+    private static Method SET_USE_ELK;
 
     static {
         ClassLoader classLoader = PlantUML.class.getClassLoader();
@@ -83,6 +86,13 @@ public class PlantUML implements DiagramGeneratorFunction
         if (SET_DOT_EXE == null) {
             throw new IllegalStateException("Could not find setDotExecutable method");
         }
+
+        try {
+            Class<?> titledDiagram = TitledDiagram.class;
+            SET_USE_ELK = titledDiagram.getMethod("setUseElk", boolean.class);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            SET_USE_ELK = null;
+        }
     }
 
     @Override
@@ -93,6 +103,9 @@ public class PlantUML implements DiagramGeneratorFunction
         if (pathToGraphViz != null) {
             if (pathToGraphViz.equalsIgnoreCase(SMETANA)) {
                 pathToGraphViz = SMETANA;
+                graphviz = null;
+            } else if (pathToGraphViz.equalsIgnoreCase(ELK)) {
+                pathToGraphViz = ELK;
                 graphviz = null;
             } else {
                 File graphvizParam = new File(pathToGraphViz);
@@ -188,7 +201,17 @@ public class PlantUML implements DiagramGeneratorFunction
                                 if (system instanceof TitledDiagram) {
                                     ((TitledDiagram) system).setUseSmetana(true);
                                 } else {
-                                    throw new IOException("Cannot use Smetana layout engine with diagram class " + system.getClass().getSimpleName());
+                                    throw new IOException("Cannot use Smetana engine with diagram class " + system.getClass().getSimpleName());
+                                }
+                            } else if (ELK.equalsIgnoreCase(pathToGraphViz)) {
+                                if (system instanceof TitledDiagram) {
+                                    if (SET_USE_ELK != null) {
+                                        SET_USE_ELK.invoke(system, true);
+                                    } else {
+                                        throw new IOException("Eclipse Layout Kernel (ELK) support is not available");
+                                    }
+                                } else {
+                                    throw new IOException("Cannot use Eclipse Layout Kernel (ELK) engine with diagram class " + system.getClass().getSimpleName());
                                 }
                             }
 
