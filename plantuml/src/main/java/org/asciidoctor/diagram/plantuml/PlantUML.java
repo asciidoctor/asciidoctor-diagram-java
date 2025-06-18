@@ -57,34 +57,78 @@ public class PlantUML implements DiagramGeneratorFunction
         try {
             Class<?> utils = classLoader.loadClass("net.sourceforge.plantuml.dot.GraphvizUtils");
 
-            SET_DOT_EXE = utils.getMethod("setDotExecutable", String.class);
-            SET_DOT_EXE_INSTANCE = null;
+            if (SET_DOT_EXE == null) {
+                try {
+                    SET_DOT_EXE = utils.getMethod("setDotExecutable", String.class);
+                    SET_DOT_EXE_INSTANCE = null;
+                } catch (NoSuchMethodException | SecurityException e) {
+                    // Ignored
+                }
+            }
 
-            SET_LOCAL_IMAGE_LIMIT = utils.getMethod("setLocalImageLimit", Integer.TYPE);
-            SET_LOCAL_IMAGE_LIMIT_INSTANCE = null;
+            if (SET_LOCAL_IMAGE_LIMIT == null) {
+                try {
+                    SET_LOCAL_IMAGE_LIMIT = utils.getMethod("setLocalImageLimit", Integer.TYPE);
+                    SET_LOCAL_IMAGE_LIMIT_INSTANCE = null;
+                } catch (NoSuchMethodException | SecurityException e) {
+                    // Ignored
+                }
+            }
 
-            REMOVE_LOCAL_LIMIT_SIZE = utils.getMethod("removeLocalLimitSize");
-            REMOVE_LOCAL_LIMIT_SIZE_INSTANCE = null;
+            if (REMOVE_LOCAL_LIMIT_SIZE == null) {
+                try {
+                    REMOVE_LOCAL_LIMIT_SIZE = utils.getMethod("removeLocalLimitSize");
+                    REMOVE_LOCAL_LIMIT_SIZE_INSTANCE = null;
+                } catch (NoSuchMethodException | SecurityException e) {
+                    // Ignored
+                }
+            }
         } catch (ReflectiveOperationException | RuntimeException e) {
             // Try next option
         }
 
         try {
             Class<?> utils = classLoader.loadClass("net.sourceforge.plantuml.cucadiagram.dot.GraphvizUtils");
-            SET_DOT_EXE = utils.getMethod("setDotExecutable", String.class);
-            SET_DOT_EXE_INSTANCE = null;
+            if (SET_DOT_EXE == null) {
+                try {
+                    SET_DOT_EXE = utils.getMethod("setDotExecutable", String.class);
+                    SET_DOT_EXE_INSTANCE = null;
+                } catch (NoSuchMethodException | SecurityException e) {
+                    // Ignored
+                }
+            }
 
-            SET_LOCAL_IMAGE_LIMIT = utils.getMethod("setLocalImageLimit", Integer.TYPE);
-            SET_LOCAL_IMAGE_LIMIT_INSTANCE = null;
+            if (SET_LOCAL_IMAGE_LIMIT == null) {
+                try {
+                    SET_LOCAL_IMAGE_LIMIT = utils.getMethod("setLocalImageLimit", Integer.TYPE);
+                    SET_LOCAL_IMAGE_LIMIT_INSTANCE = null;
+                } catch (NoSuchMethodException | SecurityException e) {
+                    // Ignored
+                }
+            }
 
-            REMOVE_LOCAL_LIMIT_SIZE = utils.getMethod("removeLocalLimitSize");
-            REMOVE_LOCAL_LIMIT_SIZE_INSTANCE = null;
+            if (REMOVE_LOCAL_LIMIT_SIZE == null) {
+                try {
+                    REMOVE_LOCAL_LIMIT_SIZE = utils.getMethod("removeLocalLimitSize");
+                    REMOVE_LOCAL_LIMIT_SIZE_INSTANCE = null;
+                } catch (NoSuchMethodException | SecurityException e) {
+                    // Ignored
+                }
+            }
         } catch (ReflectiveOperationException | RuntimeException e) {
             // Try next option
         }
 
         if (SET_DOT_EXE == null) {
             throw new IllegalStateException("Could not find setDotExecutable method");
+        }
+
+        if (SET_LOCAL_IMAGE_LIMIT == null) {
+            throw new IllegalStateException("Could not find setLocalImageLimit method");
+        }
+
+        if (REMOVE_LOCAL_LIMIT_SIZE == null) {
+            throw new IllegalStateException("Could not find removeLocalLimitSize method");
         }
 
         try {
