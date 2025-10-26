@@ -2,6 +2,7 @@ package org.asciidoctor.diagram.plantuml;
 
 import net.sourceforge.plantuml.*;
 import net.sourceforge.plantuml.core.Diagram;
+import net.sourceforge.plantuml.dot.GraphvizRuntimeEnvironment;
 import net.sourceforge.plantuml.error.PSystemError;
 import net.sourceforge.plantuml.preproc.Defines;
 import net.sourceforge.plantuml.security.SFile;
@@ -119,6 +120,15 @@ public class PlantUML implements DiagramGeneratorFunction
             // Try next option
         }
 
+        try {
+            Class<?> runtimeEnv = classLoader.loadClass("net.sourceforge.plantuml.dot.GraphvizRuntimeEnvironment");
+            SET_DOT_EXE_INSTANCE = runtimeEnv.getMethod("getInstance").invoke(null);
+            SET_DOT_EXE = runtimeEnv.getMethod("setDotExecutable", String.class);
+
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // Try next option
+        }
+
         if (SET_DOT_EXE == null) {
             throw new IllegalStateException("Could not find setDotExecutable method");
         }
@@ -183,7 +193,7 @@ public class PlantUML implements DiagramGeneratorFunction
             throw new IOException("Unsupported output format: " + format);
         }
 
-        Option option = new Option();
+        PlantUMLOptions option = new PlantUMLOptions();
 
         String plantUmlConfig = request.headers.getValue(X_PLANT_UML_CONFIG);
         if (plantUmlConfig != null) {
