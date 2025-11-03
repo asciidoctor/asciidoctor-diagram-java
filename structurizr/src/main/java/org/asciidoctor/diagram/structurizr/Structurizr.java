@@ -1,6 +1,7 @@
 package org.asciidoctor.diagram.structurizr;
 
 import com.structurizr.Workspace;
+import com.structurizr.dsl.Features;
 import com.structurizr.dsl.StructurizrDslParser;
 import com.structurizr.dsl.StructurizrDslParserException;
 import com.structurizr.export.AbstractDiagramExporter;
@@ -9,6 +10,7 @@ import com.structurizr.export.dot.DOTExporter;
 import com.structurizr.export.mermaid.MermaidDiagramExporter;
 import com.structurizr.export.plantuml.C4PlantUMLExporter;
 import com.structurizr.export.plantuml.StructurizrPlantUMLExporter;
+import com.structurizr.http.HttpClient;
 import com.structurizr.io.WorkspaceReaderException;
 import com.structurizr.io.json.JsonReader;
 import com.structurizr.view.*;
@@ -137,9 +139,10 @@ public class Structurizr implements DiagramGeneratorFunction {
         String includeDir = request.headers.getValue("X-Structurizr-IncludeDir");
 
         try {
-            Workspace workspace = parseWorkspace(request, includeDir);
+            boolean secure = "true".equalsIgnoreCase(request.headers.getValue("X-Structurizr-Secure"));
+            Workspace workspace = parseWorkspace(request, includeDir, secure);
 
-            prepareWorkspaceForExport(workspace);
+            prepareWorkspaceForExport(workspace, secure);
 
             View view = findView(workspace, viewKey);
             Diagram diagram = exportView(exporter, view);
@@ -157,16 +160,16 @@ public class Structurizr implements DiagramGeneratorFunction {
 
     private static final Pattern DSL = Pattern.compile("^\\s*workspace", Pattern.CASE_INSENSITIVE);
 
-    private Workspace parseWorkspace(Request request, String includeDir) throws StructurizrDslParserException, IOException, WorkspaceReaderException {
+    private Workspace parseWorkspace(Request request, String includeDir, boolean secure) throws StructurizrDslParserException, IOException, WorkspaceReaderException {
         String content = request.asString();
         if (DSL.matcher(content).find()) {
-            return parseDsl(content, includeDir);
+            return parseDsl(content, includeDir, secure);
         } else {
             return parseJson(content);
         }
     }
 
-    private static Workspace parseDsl(String content, String includeDir) throws StructurizrDslParserException {
+    private static Workspace parseDsl(String content, String includeDir, boolean secure) throws StructurizrDslParserException {
         File baseDir;
         if (includeDir != null) {
             baseDir = new File(includeDir);
@@ -174,6 +177,19 @@ public class Structurizr implements DiagramGeneratorFunction {
             baseDir = new File(System.getProperty("user.dir"));
         }
         StructurizrDslParser structurizrDslParser = new StructurizrDslParser();
+        Features features = structurizrDslParser.getFeatures();
+        if (secure) {
+            features.disable(Features.ENVIRONMENT);
+            features.disable(Features.FILE_SYSTEM);
+            features.disable(Features.PLUGINS);
+            features.disable(Features.SCRIPTS);
+            features.disable(Features.COMPONENT_FINDER);
+            features.disable(Features.DOCUMENTATION);
+            features.disable(Features.DECISIONS);
+            features.disable(Features.HTTP);
+            features.disable(Features.HTTPS);
+        }
+
         PARSE.parse(structurizrDslParser, content, new File(baseDir, "stdin"));
         return structurizrDslParser.getWorkspace();
     }
@@ -182,10 +198,15 @@ public class Structurizr implements DiagramGeneratorFunction {
         return new JsonReader().read(new StringReader(content));
     }
 
-    private static void prepareWorkspaceForExport(Workspace workspace) throws Exception {
+    private static void prepareWorkspaceForExport(Workspace workspace, boolean secure) throws Exception {
         // Copied from https://github.com/structurizr/cli/blob/master/src/main/java/com/structurizr/cli/export/ExportCommand.java#L141
 
         // Load themes that are referenced using HTTP(S) URIs
+        HttpClient httpClient = new HttpClient();
+        httpClient.setTimeout(10000);
+        if (!secure) {
+            httpClient.allow(".*");
+        }
         ThemeUtils.loadThemes(workspace);
 
         // Ensure at least one view exists
