@@ -12,7 +12,6 @@ import com.structurizr.export.plantuml.StructurizrPlantUMLExporter;
 import com.structurizr.io.WorkspaceReaderException;
 import com.structurizr.io.json.JsonReader;
 import com.structurizr.view.*;
-import io.github.goto1134.structurizr.export.d2.D2Exporter;
 import org.asciidoctor.diagram.*;
 
 import java.io.File;
@@ -114,7 +113,13 @@ public class Structurizr implements DiagramGeneratorFunction {
         } else if (format.isSameType(PLANTUML)) {
             exporter = new StructurizrPlantUMLExporter();
         } else if (format.isSameType(D2)) {
-            exporter = new D2Exporter();
+            try {
+                Class<?> d2ExporterClass = Class.forName("io.github.goto1134.structurizr.export.d2");
+                exporter = (AbstractDiagramExporter) d2ExporterClass.getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException | ClassNotFoundException e) {
+                throw new IOException("D2 exporter not available", e);
+            }
         } else {
             throw new IOException("Unsupported output format: " + format);
         }
