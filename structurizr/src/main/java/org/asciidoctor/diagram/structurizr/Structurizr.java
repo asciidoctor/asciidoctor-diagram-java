@@ -1,7 +1,6 @@
 package org.asciidoctor.diagram.structurizr;
 
 import com.structurizr.Workspace;
-import com.structurizr.dsl.Features;
 import com.structurizr.dsl.StructurizrDslParser;
 import com.structurizr.dsl.StructurizrDslParserException;
 import com.structurizr.export.AbstractDiagramExporter;
@@ -10,7 +9,6 @@ import com.structurizr.export.dot.DOTExporter;
 import com.structurizr.export.mermaid.MermaidDiagramExporter;
 import com.structurizr.export.plantuml.C4PlantUMLExporter;
 import com.structurizr.export.plantuml.StructurizrPlantUMLExporter;
-import com.structurizr.http.HttpClient;
 import com.structurizr.io.WorkspaceReaderException;
 import com.structurizr.io.json.JsonReader;
 import com.structurizr.view.*;
@@ -30,6 +28,19 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class Structurizr implements DiagramGeneratorFunction {
+    private static final StructurizrSupport SUPPORT;
+
+    static {
+        StructurizrSupport support;
+        try {
+            support = new StrucurizrSupport5();
+        } catch (Throwable e) {
+            support = new StrucurizrSupportPre5();
+        }
+
+        SUPPORT = support;
+    }
+
     @FunctionalInterface
     interface ParseDsl {
         void parse(StructurizrDslParser parser, String dsl, File file) throws StructurizrDslParserException;
@@ -169,26 +180,14 @@ public class Structurizr implements DiagramGeneratorFunction {
         }
     }
 
-    private static Workspace parseDsl(String content, String includeDir, boolean secure) throws StructurizrDslParserException {
+    private Workspace parseDsl(String content, String includeDir, boolean secure) throws StructurizrDslParserException {
         File baseDir;
         if (includeDir != null) {
             baseDir = new File(includeDir);
         } else {
             baseDir = new File(System.getProperty("user.dir"));
         }
-        StructurizrDslParser structurizrDslParser = new StructurizrDslParser();
-        Features features = structurizrDslParser.getFeatures();
-        if (secure) {
-            features.disable(Features.ENVIRONMENT);
-            features.disable(Features.FILE_SYSTEM);
-            features.disable(Features.PLUGINS);
-            features.disable(Features.SCRIPTS);
-            features.disable(Features.COMPONENT_FINDER);
-            features.disable(Features.DOCUMENTATION);
-            features.disable(Features.DECISIONS);
-            features.disable(Features.HTTP);
-            features.disable(Features.HTTPS);
-        }
+        StructurizrDslParser structurizrDslParser = SUPPORT.createParser(secure);
 
         PARSE.parse(structurizrDslParser, content, new File(baseDir, "stdin"));
         return structurizrDslParser.getWorkspace();
@@ -198,16 +197,11 @@ public class Structurizr implements DiagramGeneratorFunction {
         return new JsonReader().read(new StringReader(content));
     }
 
-    private static void prepareWorkspaceForExport(Workspace workspace, boolean secure) throws Exception {
+    private void prepareWorkspaceForExport(Workspace workspace, boolean secure) throws Exception {
         // Copied from https://github.com/structurizr/cli/blob/master/src/main/java/com/structurizr/cli/export/ExportCommand.java#L141
 
         // Load themes that are referenced using HTTP(S) URIs
-        HttpClient httpClient = new HttpClient();
-        httpClient.setTimeout(10000);
-        if (!secure) {
-            httpClient.allow(".*");
-        }
-        ThemeUtils.loadThemes(workspace);
+        SUPPORT.loadThemes(workspace, secure);
 
         // Ensure at least one view exists
         if (workspace.getViews().isEmpty()) {
