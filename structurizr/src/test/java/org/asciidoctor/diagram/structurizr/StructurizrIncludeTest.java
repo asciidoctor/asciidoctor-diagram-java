@@ -80,7 +80,7 @@ public class StructurizrIncludeTest {
     {
         Files.write(
                 tempDir.resolve(INCLUDE_FILE_NAME),
-                List.of("!constant \"SOAP\" \"SOAP/XML\""),
+                List.of("!const \"SOAP\" \"SOAP/XML\""),
                 StandardCharsets.UTF_8
         );
 
