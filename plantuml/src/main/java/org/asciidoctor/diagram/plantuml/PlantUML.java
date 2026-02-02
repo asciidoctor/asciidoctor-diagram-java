@@ -2,7 +2,6 @@ package org.asciidoctor.diagram.plantuml;
 
 import net.sourceforge.plantuml.*;
 import net.sourceforge.plantuml.core.Diagram;
-import net.sourceforge.plantuml.dot.GraphvizRuntimeEnvironment;
 import net.sourceforge.plantuml.error.PSystemError;
 import net.sourceforge.plantuml.preproc.Defines;
 import net.sourceforge.plantuml.security.SFile;
@@ -231,7 +230,7 @@ public class PlantUML implements DiagramGeneratorFunction
                     SFile currentDir = FileSystem.getInstance().getCurrentDir();
                     BlockUmlBuilder builder = new BlockUmlBuilder(
                             config,
-                            "UTF-8",
+                            StandardCharsets.UTF_8,
                             Defines.createEmpty(),
                             new StringReader(request.asString()),
                             currentDir,

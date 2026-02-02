@@ -1,7 +1,6 @@
 package org.asciidoctor.diagram.plantuml;
 
 import net.sourceforge.plantuml.*;
-import net.sourceforge.plantuml.cli.CliOptions;
 import net.sourceforge.plantuml.core.Diagram;
 import net.sourceforge.plantuml.core.UmlSource;
 import net.sourceforge.plantuml.error.PSystemError;
@@ -75,7 +74,7 @@ public class PlantUMLPreprocessor implements DiagramGeneratorFunction
 
         BlockUmlBuilder builder = new BlockUmlBuilder(
                 option.getConfig(),
-                "UTF-8",
+                StandardCharsets.UTF_8,
                 Defines.createEmpty(),
                 new StringReader(input),
                 baseDir != null ? new SFile(baseDir) : FileSystem.getInstance().getCurrentDir(),
