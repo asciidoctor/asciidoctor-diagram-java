@@ -1,5 +1,6 @@
 package org.asciidoctor.diagram.plantuml;
 
+import net.sourceforge.plantuml.FileSystem;
 import org.asciidoctor.diagram.*;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,9 +53,9 @@ public class PlantUMLPreprocessorTest {
         System.setProperty("plantuml.include.path", Paths.get("doesnotexist").toAbsolutePath().toString());
 
         String output = preprocess(
-                "@startuml\n!include common.puml\nclass B\n@enduml",
+                "@startuml\n!include src/test/resources/include/common.puml\nclass B\n@enduml",
                 Paths.get("someotherdir").toAbsolutePath().toString(),
-                getAbsolutePath("include/")
+                FileSystem.getInstance().getCurrentDir().toPath().resolve("src/test/resources").toAbsolutePath().toString()
         );
         Assert.assertEquals(
                 "@startuml\nclass C\nclass B\n@enduml",
