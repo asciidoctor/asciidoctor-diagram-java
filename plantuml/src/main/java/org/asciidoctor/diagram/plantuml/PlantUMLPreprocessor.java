@@ -6,6 +6,7 @@ import net.sourceforge.plantuml.core.UmlSource;
 import net.sourceforge.plantuml.error.PSystemError;
 import net.sourceforge.plantuml.preproc.Defines;
 import net.sourceforge.plantuml.security.SFile;
+import net.sourceforge.plantuml.text.StringLocated;
 import org.asciidoctor.diagram.*;
 
 import java.io.ByteArrayOutputStream;
@@ -97,11 +98,11 @@ public class PlantUMLPreprocessor implements DiagramGeneratorFunction
                 if (source != null) {
                     Iterator lines = source.iterator2();
                     while(lines.hasNext()) {
-                        Object line = lines.next();
+                        StringLocated line = (StringLocated)lines.next();
                         if (out.length() > 0) {
                             out.append('\n');
                         }
-                        out.append(line);
+                        out.append(line.getString());
                     }
                 }
             }
