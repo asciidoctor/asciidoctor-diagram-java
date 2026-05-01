@@ -1,9 +1,9 @@
 dependencies {
     implementation project(':server')
-    implementation 'com.structurizr:structurizr-core:5.0.1'
-    implementation 'com.structurizr:structurizr-dsl:5.0.1'
-    implementation 'com.structurizr:structurizr-export:5.0.1'
-    implementation 'io.github.goto1134:structurizr-d2-exporter:1.2.0'
+    implementation 'com.structurizr:structurizr-core:6.2.0'
+    implementation 'com.structurizr:structurizr-dsl:6.2.0'
+    implementation 'com.structurizr:structurizr-export:6.2.0'
+    implementation 'io.github.goto1134:structurizr-d2-exporter:1.6.0'
     testImplementation project(':server')
     testImplementation project(path: ':server', configuration: 'tests')
 }
